@@ -4,6 +4,14 @@
     <title>test_my_site</title>
     <url>/2023/06/04/test-my-site/</url>
     <content><![CDATA[]]></content>
+      <categories>
+        <category>cat1</category>
+        <category>cat2</category>
+      </categories>
+      <tags>
+        <tag>1st</tag>
+        <tag>2nd</tag>
+      </tags>
   </entry>
   <entry>
     <title>Hello World</title>
@@ -22,5 +30,15 @@
 
 <p>More info: <a class="link"   href="https://hexo.io/docs/one-command-deployment.html" >Deployment<i class="fas fa-external-link-alt"></i></a></p>
 ]]></content>
+      <categories>
+        <category>Cat1</category>
+        <category>Cat2</category>
+        <category>Cat3</category>
+      </categories>
+      <tags>
+        <tag>1st</tag>
+        <tag>2nd</tag>
+        <tag>3rd</tag>
+      </tags>
   </entry>
 </search>
