@@ -1,3 +1,12 @@
 <?xml version="1.0" encoding="utf-8"?>
 <search>
+  <entry>
+    <title>AWSLambdaETL</title>
+    <url>/2023/12/19/AWSLambdaETL/</url>
+    <content><![CDATA[<h1 id="AWS-Lambda-ETL"><a href="#AWS-Lambda-ETL" class="headerlink" title="AWS Lambda ETL"></a>AWS Lambda ETL</h1><h3 id="Layer-Creation"><a href="#Layer-Creation" class="headerlink" title="Layer Creation"></a>Layer Creation<img src="/2023/12/19/AWSLambdaETL/layerCreation.png"></h3>]]></content>
+      <tags>
+        <tag>AWS</tag>
+        <tag>ETL</tag>
+      </tags>
+  </entry>
 </search>
