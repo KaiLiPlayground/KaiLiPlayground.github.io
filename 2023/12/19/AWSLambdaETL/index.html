@@ -9,7 +9,7 @@
     
     <title>
         
-            AWSLambdaETL |
+            AWS Lambda ETL |
         
         Kai Li
     </title>
@@ -180,7 +180,7 @@
         <div class="article-content-container">
 
             <div class="article-title">
-                <span class="title-hover-animation">AWSLambdaETL</span>
+                <span class="title-hover-animation">AWS Lambda ETL</span>
             </div>
 
             
@@ -208,7 +208,7 @@
     
         <span class="article-update-date article-meta-item">
         <i class="fas fa-file-pen"></i>&nbsp;
-        <span class="pc">2023-12-19 17:03:42</span>
+        <span class="pc">2023-12-19 21:27:43</span>
     </span>
     
     
@@ -223,6 +223,10 @@
                 
                     <li>
                         | <a href="/tags/ETL/">ETL</a>&nbsp;
+                    </li>
+                
+                    <li>
+                        | <a href="/tags/Lambda/">Lambda</a>&nbsp;
                     </li>
                 
             </ul>
@@ -243,7 +247,90 @@
             <div class="article-content keep-markdown-body">
                 
 
-                <h1 id="AWS-Lambda-ETL"><a href="#AWS-Lambda-ETL" class="headerlink" title="AWS Lambda ETL"></a>AWS Lambda ETL</h1><h3 id="Layer-Creation"><a href="#Layer-Creation" class="headerlink" title="Layer Creation"></a>Layer Creation<img src="/2023/12/19/AWSLambdaETL/layerCreation.png"></h3>
+                <h1 id="Triggering-an-AWS-Lambda-function-when-a-new-file-arrives-in-an-S3-bucket"><a href="#Triggering-an-AWS-Lambda-function-when-a-new-file-arrives-in-an-S3-bucket" class="headerlink" title="Triggering an AWS Lambda function when a new file arrives in an S3 bucket"></a>Triggering an AWS Lambda function when a new file arrives in an S3 bucket</h1><h2 id="Creating-a-Lambda-layer-containeing-the-AWS-Data-Wrangler-library"><a href="#Creating-a-Lambda-layer-containeing-the-AWS-Data-Wrangler-library" class="headerlink" title="Creating a Lambda layer containeing the AWS Data Wrangler library"></a>Creating a Lambda layer containeing the AWS Data Wrangler library</h2><h3 id="Layer-Creation"><a href="#Layer-Creation" class="headerlink" title="Layer Creation"></a>Layer Creation</h3><p><img src="/2023/12/19/AWSLambdaETL/layerCreation.png"></p>
+<ul>
+<li>upload <a class="link"   target="_blank" rel="noopener" href="https://github.com/aws/aws-sdk-pandas/releases" >awsdatawrangler<i class="fas fa-external-link-alt"></i></a> to AWS layer and name it as <code>awsDataWrangler342_py38</code></li>
+</ul>
+<h3 id="Create-two-new-Amazon-S3-buckets"><a href="#Create-two-new-Amazon-S3-buckets" class="headerlink" title="Create two new Amazon S3 buckets"></a>Create two new Amazon S3 buckets</h3><ul>
+<li><p>landing zone S3 bucket: <code>dataeng-landing-zone-etl</code></p>
+</li>
+<li><p>clean zone S3 bucket: <code>dataeng-clean-zone-etl</code></p>
+</li>
+</ul>
+<h3 id="Create-an-IAM-policy-and-role-for-your-Lambda-function"><a href="#Create-an-IAM-policy-and-role-for-your-Lambda-function" class="headerlink" title="Create an IAM policy and role for your Lambda function"></a>Create an IAM policy and role for your Lambda function</h3><ul>
+<li><p>name the policy as <code>DataEngLambdaS3CWGluePolicy</code> </p>
+</li>
+<li><p>Note: remember to replace the two storage names to your own ones</p>
+</li>
+</ul>
+<figure class="highlight json"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br></pre></td><td class="code"><pre><span class="line"><span class="punctuation">&#123;</span></span><br><span class="line">    <span class="attr">&quot;Version&quot;</span><span class="punctuation">:</span> <span class="string">&quot;2012-10-17&quot;</span><span class="punctuation">,</span></span><br><span class="line">    <span class="attr">&quot;Statement&quot;</span><span class="punctuation">:</span> <span class="punctuation">[</span></span><br><span class="line">        <span class="punctuation">&#123;</span></span><br><span class="line">            <span class="attr">&quot;Effect&quot;</span><span class="punctuation">:</span> <span class="string">&quot;Allow&quot;</span><span class="punctuation">,</span></span><br><span class="line">            <span class="attr">&quot;Action&quot;</span><span class="punctuation">:</span> <span class="punctuation">[</span></span><br><span class="line">                <span class="string">&quot;logs:PutLogEvents&quot;</span><span class="punctuation">,</span></span><br><span class="line">                <span class="string">&quot;logs:CreateLogGroup&quot;</span><span class="punctuation">,</span></span><br><span class="line">                <span class="string">&quot;logs:CreateLogStream&quot;</span></span><br><span class="line">            <span class="punctuation">]</span><span class="punctuation">,</span></span><br><span class="line">            <span class="attr">&quot;Resource&quot;</span><span class="punctuation">:</span> <span class="string">&quot;arn:aws:logs:*:*:*&quot;</span></span><br><span class="line">        <span class="punctuation">&#125;</span><span class="punctuation">,</span></span><br><span class="line">        <span class="punctuation">&#123;</span></span><br><span class="line">            <span class="attr">&quot;Effect&quot;</span><span class="punctuation">:</span> <span class="string">&quot;Allow&quot;</span><span class="punctuation">,</span></span><br><span class="line">            <span class="attr">&quot;Action&quot;</span><span class="punctuation">:</span> <span class="punctuation">[</span></span><br><span class="line">                <span class="string">&quot;s3:*&quot;</span></span><br><span class="line">            <span class="punctuation">]</span><span class="punctuation">,</span></span><br><span class="line">            <span class="attr">&quot;Resource&quot;</span><span class="punctuation">:</span> <span class="punctuation">[</span></span><br><span class="line">                <span class="string">&quot;arn:aws:s3:::dataeng-landing-zone-etl/*&quot;</span><span class="punctuation">,</span></span><br><span class="line">                <span class="string">&quot;arn:aws:s3:::dataeng-landing-zone-etl&quot;</span><span class="punctuation">,</span></span><br><span class="line">                <span class="string">&quot;arn:aws:s3:::dataeng-clean-zone-etl/*&quot;</span><span class="punctuation">,</span></span><br><span class="line">                <span class="string">&quot;arn:aws:s3:::dataeng-clean-zone-etl&quot;</span></span><br><span class="line">            <span class="punctuation">]</span></span><br><span class="line">        <span class="punctuation">&#125;</span><span class="punctuation">,</span></span><br><span class="line">        <span class="punctuation">&#123;</span></span><br><span class="line">            <span class="attr">&quot;Effect&quot;</span><span class="punctuation">:</span> <span class="string">&quot;Allow&quot;</span><span class="punctuation">,</span></span><br><span class="line">            <span class="attr">&quot;Action&quot;</span><span class="punctuation">:</span> <span class="punctuation">[</span></span><br><span class="line">                <span class="string">&quot;glue:*&quot;</span></span><br><span class="line">            <span class="punctuation">]</span><span class="punctuation">,</span></span><br><span class="line">            <span class="attr">&quot;Resource&quot;</span><span class="punctuation">:</span> <span class="string">&quot;*&quot;</span></span><br><span class="line">        <span class="punctuation">&#125;</span></span><br><span class="line">    <span class="punctuation">]</span></span><br><span class="line"><span class="punctuation">&#125;</span></span><br></pre></td></tr></table></figure>
+
+<ul>
+<li>Create a custom role and name it as <code>DataEngLambdaS3CWGluePolicy</code> using <code>DataEngLambdaS3CWGluePolicy</code></li>
+</ul>
+<h3 id="Create-a-Lambda-function"><a href="#Create-a-Lambda-function" class="headerlink" title="Create a Lambda function"></a>Create a Lambda function</h3><ul>
+<li>specify the Python version and your custom role in this function, see the below screenshot for reference</li>
+<li>name it as <code>CSVtoParquetLambda</code></li>
+</ul>
+<p><img src="/2023/12/19/AWSLambdaETL/csvtoparquetlambda.png"></p>
+<ul>
+<li><p>add the layer (<code>awsDataWrangler342_py38</code>) created into the lambda function</p>
+</li>
+<li><p>add the code source which is given as below</p>
+</li>
+</ul>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">import</span> boto3</span><br><span class="line"><span class="keyword">import</span> awswrangler <span class="keyword">as</span> wr</span><br><span class="line"><span class="keyword">from</span> urllib.parse <span class="keyword">import</span> unquote_plus</span><br><span class="line"></span><br><span class="line"><span class="comment"># this &#x27;debug&#x27; logging part can be removed as it is </span></span><br><span class="line"><span class="keyword">import</span> logging</span><br><span class="line">logging.getLogger(<span class="string">&#x27;awswrangler&#x27;</span>).setLevel(logging.DEBUG)</span><br><span class="line"></span><br><span class="line"><span class="keyword">def</span> <span class="title function_">lambda_handler</span>(<span class="params">event, context</span>):</span><br><span class="line">    <span class="comment"># Get the source bucket and object name as passed to the Lambda function</span></span><br><span class="line">    <span class="keyword">for</span> record <span class="keyword">in</span> event[<span class="string">&#x27;Records&#x27;</span>]:</span><br><span class="line">        bucket = record[<span class="string">&#x27;s3&#x27;</span>][<span class="string">&#x27;bucket&#x27;</span>][<span class="string">&#x27;name&#x27;</span>]</span><br><span class="line">        key = unquote_plus(record[<span class="string">&#x27;s3&#x27;</span>][<span class="string">&#x27;object&#x27;</span>][<span class="string">&#x27;key&#x27;</span>])</span><br><span class="line"></span><br><span class="line">    <span class="comment"># We will set the DB and table name based on the last two elements of </span></span><br><span class="line">    <span class="comment"># the path prior to the file name. If key = &#x27;dms/sakila/film/LOAD01.csv&#x27;,</span></span><br><span class="line">    <span class="comment"># then the following lines will set db to sakila and table_name to &#x27;film&#x27;</span></span><br><span class="line">    key_list = key.split(<span class="string">&quot;/&quot;</span>)</span><br><span class="line">    <span class="built_in">print</span>(<span class="string">f&#x27;key_list: <span class="subst">&#123;key_list&#125;</span>&#x27;</span>)</span><br><span class="line">    db_name = key_list[<span class="built_in">len</span>(key_list)-<span class="number">3</span>]</span><br><span class="line">    table_name = key_list[<span class="built_in">len</span>(key_list)-<span class="number">2</span>]</span><br><span class="line"></span><br><span class="line">    <span class="built_in">print</span>(<span class="string">f&#x27;Bucket: <span class="subst">&#123;bucket&#125;</span>&#x27;</span>)</span><br><span class="line">    <span class="built_in">print</span>(<span class="string">f&#x27;Key: <span class="subst">&#123;key&#125;</span>&#x27;</span>)</span><br><span class="line">    <span class="built_in">print</span>(<span class="string">f&#x27;DB Name: <span class="subst">&#123;db_name&#125;</span>&#x27;</span>)</span><br><span class="line">    <span class="built_in">print</span>(<span class="string">f&#x27;Table Name: <span class="subst">&#123;table_name&#125;</span>&#x27;</span>)</span><br><span class="line"></span><br><span class="line">    input_path = <span class="string">f&quot;s3://<span class="subst">&#123;bucket&#125;</span>/<span class="subst">&#123;key&#125;</span>&quot;</span></span><br><span class="line">    <span class="built_in">print</span>(<span class="string">f&#x27;Input_Path: <span class="subst">&#123;input_path&#125;</span>&#x27;</span>)</span><br><span class="line">    output_path = <span class="string">f&quot;s3://dataeng-clean-zone-etl/<span class="subst">&#123;db_name&#125;</span>/<span class="subst">&#123;table_name&#125;</span>&quot;</span></span><br><span class="line">    <span class="built_in">print</span>(<span class="string">f&#x27;Output_Path: <span class="subst">&#123;output_path&#125;</span>&#x27;</span>)</span><br><span class="line"></span><br><span class="line">    input_df = wr.s3.read_csv([input_path])</span><br><span class="line"></span><br><span class="line">    current_databases = wr.catalog.databases()</span><br><span class="line">    wr.catalog.databases()</span><br><span class="line">    <span class="keyword">if</span> db_name <span class="keyword">not</span> <span class="keyword">in</span> current_databases.values:</span><br><span class="line">        <span class="built_in">print</span>(<span class="string">f&#x27;- Database <span class="subst">&#123;db_name&#125;</span> does not exist ... creating&#x27;</span>)</span><br><span class="line">        wr.catalog.create_database(db_name)</span><br><span class="line">    <span class="keyword">else</span>:</span><br><span class="line">        <span class="built_in">print</span>(<span class="string">f&#x27;- Database <span class="subst">&#123;db_name&#125;</span> already exists&#x27;</span>)</span><br><span class="line"></span><br><span class="line">    result = wr.s3.to_parquet(</span><br><span class="line">        df=input_df, </span><br><span class="line">        path=output_path, </span><br><span class="line">        dataset=<span class="literal">True</span>,</span><br><span class="line">        database=db_name,</span><br><span class="line">        table=table_name,</span><br><span class="line">        mode=<span class="string">&quot;append&quot;</span>)</span><br><span class="line"></span><br><span class="line">    <span class="built_in">print</span>(<span class="string">&quot;RESULT: &quot;</span>)</span><br><span class="line">    <span class="built_in">print</span>(<span class="string">f&#x27;<span class="subst">&#123;result&#125;</span>&#x27;</span>)</span><br><span class="line"></span><br><span class="line">    <span class="keyword">return</span> result</span><br></pre></td></tr></table></figure>
+
+<ul>
+<li>Last Step: deploy</li>
+</ul>
+<blockquote>
+<p>Note: </p>
+<p><code>logging.getLogger(&#39;awswrangler&#39;).setLevel(logging.DEBUG)</code> is to enable debug log to check if anything can go wrong from the awswrangler library. </p>
+</blockquote>
+<h3 id="Trigger-configuration"><a href="#Trigger-configuration" class="headerlink" title="Trigger configuration"></a>Trigger configuration</h3><ul>
+<li>configurate trigger to listen on landing S3 bucket (<code>dataeng-landing-zone-etl</code>) when a new file (suffix with <code>.csv</code>) arrives</li>
+</ul>
+<p><img src="/2023/12/19/AWSLambdaETL/triggers.png"></p>
+<ul>
+<li>create a CSV file in your local file system with the below sample fields and values</li>
+</ul>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br></pre></td><td class="code"><pre><span class="line">Name,favorite_num</span><br><span class="line">Vrinda,22</span><br><span class="line">Tracy,28</span><br><span class="line">Gareth,23</span><br><span class="line">Chris,16</span><br><span class="line">Emma,14</span><br><span class="line">Carlos,7</span><br><span class="line">Cooper,11</span><br><span class="line">Praful,4</span><br><span class="line">David,33</span><br><span class="line">Shilpa,2</span><br><span class="line">Gary,18</span><br><span class="line">Sean,20</span><br><span class="line">Ha-yoon,9</span><br><span class="line">Elizabeth,8</span><br><span class="line">Mary,1</span><br><span class="line">Chen,15</span><br><span class="line">Janet,22</span><br><span class="line">Mariusz,25</span><br><span class="line">Romain,11</span><br><span class="line">Matt,25</span><br><span class="line">Brendan,19</span><br><span class="line">Roger,2</span><br><span class="line">Jack,7</span><br><span class="line">Sachin,17</span><br><span class="line">Francisco,5</span><br><span class="line"></span><br></pre></td></tr></table></figure>
+
+<ul>
+<li>upload the CSV file to the remote bucket <code>dataeng-landing-zone-etl</code> using <code>aws</code> CLI</li>
+</ul>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">aws s3 cp .\test.csv s3://dataeng-landing-zone-etl/testdb/csvparquet/test.csv</span><br></pre></td></tr></table></figure>
+
+<ul>
+<li>list the parquet file in the clean zone bucket <code>dataeng-clean-zone-etl</code> if everything done correctly</li>
+</ul>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">aws s3 ls s3://dataeng-clean-zone-etl/testdb/csvparquet/</span><br><span class="line"><span class="meta prompt_">#</span><span class="language-bash"><span class="comment"># expected output</span></span> </span><br><span class="line">2023-12-19 16:03:57       2199 d5d09abfbfda4117b544a0bca1f8a134.snappy.parquet</span><br></pre></td></tr></table></figure>
+
+<h2 id="Possible-Issues"><a href="#Possible-Issues" class="headerlink" title="Possible Issues"></a>Possible Issues</h2><ul>
+<li>Lamdba function execution timeout shown in CloudWatch log</li>
+</ul>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><span class="line">1702972039080,&quot;[DEBUG]	2023-12-19T07:47:19.080Z	ada71ff1-340e-4389-92d6-7dc967e09483	Applying default config argument verify with value None.</span><br><span class="line">&quot;</span><br><span class="line">1702972040916,&#x27;&quot;- Database testdb already exists</span><br><span class="line">&quot;</span><br><span class="line">1702972040937,&quot;[DEBUG]	2023-12-19T07:47:20.937Z	Applying default config argument botocore_config with value None.</span><br><span class="line">&quot;</span><br><span class="line">1702972040937,&quot;[DEBUG]	2023-12-19T07:47:20.937Z	Applying default config argument verify with value None.</span><br><span class="line">&quot;</span><br><span class="line">1702972043538,&quot;[DEBUG]	2023-12-19T07:47:23.518Z	Applying default config argument botocore_config with value None.</span><br><span class="line">&quot;</span><br><span class="line">1702972043538,&quot;[DEBUG]	2023-12-19T07:47:23.538Z	Applying default config argument verify with value None.</span><br><span class="line">&quot;</span><br><span class="line">1702972214725,&quot;2023-12-19T07:50:14.725Z Task timed out after 182.10 seconds</span><br></pre></td></tr></table></figure>
+
+<blockquote>
+<p>Based on the code in the Lambda function, we know Database <code>testdb</code> exists is harmless and expected. But the execution got timed out afterwards. Initially, the function was set at 3 minutes, although the CSV file was only 128 bytes in my case, it still got timed out. </p>
+</blockquote>
+<ul>
+<li><p>Solution</p>
+<ul>
+<li>extend the execution timeout in the Lambda function in <strong>Configuration</strong> to 10 minutes</li>
+</ul>
+</li>
+</ul>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">2023-12-19T16:03:53.249+08:00	START RequestId: 67114d4d-25cf-42f2-xxx6e6 Version: $LATEST </span><br><span class="line"></span><br><span class="line"># omitted the intermediate lines </span><br><span class="line"></span><br><span class="line">2023-12-19T16:03:56.713+08:00	&#123;&#x27;paths&#x27;: [&#x27;s3://dataeng-clean-zone-etl/testdb/csvparquet/d5d09abfbfda4117b544a0bca1f8a134.snappy.parquet&#x27;], &#x27;partitions_values&#x27;: &#123;&#125;&#125;</span><br><span class="line">2023-12-19T16:03:56.715+08:00	END RequestId: 67114d4d-25cf-42f2-be60-xxx6e6 </span><br></pre></td></tr></table></figure>
+
+<blockquote>
+<p>After examing the time duration for the new Lambda run based on the 10-minutes timeout Lambda definition, our Lambda run completed without error. </p>
+<p>And the time duration for the run went for over 3 minutes. That is why our earlier run duration indeed went over the duration of 3 minutes timeout limit. </p>
+<p>One possible reason for this is the latency for establishing IO across buckets in AWS. </p>
+<p>Although the debug logging level set did not help in this case for troubleshooting, but it could be a great use for future debugging scenarios if something goes wrong with the custom Python script. </p>
+</blockquote>
+
             </div>
 
             
@@ -259,6 +346,10 @@
                             <a href="/tags/ETL/">#ETL</a>&nbsp;
                         </li>
                     
+                        <li class="tag-item">
+                            <a href="/tags/Lambda/">#Lambda</a>&nbsp;
+                        </li>
+                    
                 </ul>
             
 
@@ -271,7 +362,7 @@
             <div class="toc-content-container">
                 <div class="post-toc-wrap">
     <div class="post-toc">
-        <ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#AWS-Lambda-ETL"><span class="nav-number">1.</span> <span class="nav-text">AWS Lambda ETL</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#Layer-Creation"><span class="nav-number">1.0.1.</span> <span class="nav-text">Layer Creation</span></a></li></ol></li></ol></li></ol>
+        <ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#Triggering-an-AWS-Lambda-function-when-a-new-file-arrives-in-an-S3-bucket"><span class="nav-number">1.</span> <span class="nav-text">Triggering an AWS Lambda function when a new file arrives in an S3 bucket</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#Creating-a-Lambda-layer-containeing-the-AWS-Data-Wrangler-library"><span class="nav-number">1.1.</span> <span class="nav-text">Creating a Lambda layer containeing the AWS Data Wrangler library</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#Layer-Creation"><span class="nav-number">1.1.1.</span> <span class="nav-text">Layer Creation</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#Create-two-new-Amazon-S3-buckets"><span class="nav-number">1.1.2.</span> <span class="nav-text">Create two new Amazon S3 buckets</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#Create-an-IAM-policy-and-role-for-your-Lambda-function"><span class="nav-number">1.1.3.</span> <span class="nav-text">Create an IAM policy and role for your Lambda function</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#Create-a-Lambda-function"><span class="nav-number">1.1.4.</span> <span class="nav-text">Create a Lambda function</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#Trigger-configuration"><span class="nav-number">1.1.5.</span> <span class="nav-text">Trigger configuration</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#Possible-Issues"><span class="nav-number">1.2.</span> <span class="nav-text">Possible Issues</span></a></li></ol></li></ol>
     </div>
 </div>
 
