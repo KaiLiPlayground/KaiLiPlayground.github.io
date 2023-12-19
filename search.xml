@@ -3,17 +3,17 @@
   <entry>
     <title>AWS Lambda ETL</title>
     <url>/2023/12/19/AWSLambdaETL/</url>
-    <content><![CDATA[<h1 id="Triggering-an-AWS-Lambda-function-when-a-new-file-arrives-in-an-S3-bucket"><a href="#Triggering-an-AWS-Lambda-function-when-a-new-file-arrives-in-an-S3-bucket" class="headerlink" title="Triggering an AWS Lambda function when a new file arrives in an S3 bucket"></a>Triggering an AWS Lambda function when a new file arrives in an S3 bucket</h1><h2 id="Creating-a-Lambda-layer-containeing-the-AWS-Data-Wrangler-library"><a href="#Creating-a-Lambda-layer-containeing-the-AWS-Data-Wrangler-library" class="headerlink" title="Creating a Lambda layer containeing the AWS Data Wrangler library"></a>Creating a Lambda layer containeing the AWS Data Wrangler library</h2><h3 id="Layer-Creation"><a href="#Layer-Creation" class="headerlink" title="Layer Creation"></a>Layer Creation</h3><p><img src="/2023/12/19/AWSLambdaETL/layerCreation.png"></p>
+    <content><![CDATA[<h1 id="Triggering-an-AWS-Lambda-function-when-a-new-file-arrives-in-an-S3-bucket"><a href="#Triggering-an-AWS-Lambda-function-when-a-new-file-arrives-in-an-S3-bucket" class="headerlink" title="Triggering an AWS Lambda function when a new file arrives in an S3 bucket"></a>Triggering an AWS Lambda function when a new file arrives in an S3 bucket</h1><h3 id="Creating-a-Lambda-layer-containeing-the-AWS-Data-Wrangler-library"><a href="#Creating-a-Lambda-layer-containeing-the-AWS-Data-Wrangler-library" class="headerlink" title="Creating a Lambda layer containeing the AWS Data Wrangler library"></a>Creating a Lambda layer containeing the AWS Data Wrangler library</h3><h4 id="Layer-Creation"><a href="#Layer-Creation" class="headerlink" title="Layer Creation"></a>Layer Creation</h4><p><img src="/2023/12/19/AWSLambdaETL/layerCreation.png"></p>
 <ul>
 <li>upload <a class="link"   href="https://github.com/aws/aws-sdk-pandas/releases" >awsdatawrangler<i class="fas fa-external-link-alt"></i></a> to AWS layer and name it as <code>awsDataWrangler342_py38</code></li>
 </ul>
-<h3 id="Create-two-new-Amazon-S3-buckets"><a href="#Create-two-new-Amazon-S3-buckets" class="headerlink" title="Create two new Amazon S3 buckets"></a>Create two new Amazon S3 buckets</h3><ul>
+<h4 id="Create-two-new-Amazon-S3-buckets"><a href="#Create-two-new-Amazon-S3-buckets" class="headerlink" title="Create two new Amazon S3 buckets"></a>Create two new Amazon S3 buckets</h4><ul>
 <li><p>landing zone S3 bucket: <code>dataeng-landing-zone-etl</code></p>
 </li>
 <li><p>clean zone S3 bucket: <code>dataeng-clean-zone-etl</code></p>
 </li>
 </ul>
-<h3 id="Create-an-IAM-policy-and-role-for-your-Lambda-function"><a href="#Create-an-IAM-policy-and-role-for-your-Lambda-function" class="headerlink" title="Create an IAM policy and role for your Lambda function"></a>Create an IAM policy and role for your Lambda function</h3><ul>
+<h4 id="Create-an-IAM-policy-and-role-for-your-Lambda-function"><a href="#Create-an-IAM-policy-and-role-for-your-Lambda-function" class="headerlink" title="Create an IAM policy and role for your Lambda function"></a>Create an IAM policy and role for your Lambda function</h4><ul>
 <li><p>name the policy as <code>DataEngLambdaS3CWGluePolicy</code> </p>
 </li>
 <li><p>Note: remember to replace the two storage names to your own ones</p>
@@ -24,7 +24,7 @@
 <ul>
 <li>Create a custom role and name it as <code>DataEngLambdaS3CWGluePolicy</code> using <code>DataEngLambdaS3CWGluePolicy</code></li>
 </ul>
-<h3 id="Create-a-Lambda-function"><a href="#Create-a-Lambda-function" class="headerlink" title="Create a Lambda function"></a>Create a Lambda function</h3><ul>
+<h4 id="Create-a-Lambda-function"><a href="#Create-a-Lambda-function" class="headerlink" title="Create a Lambda function"></a>Create a Lambda function</h4><ul>
 <li>specify the Python version and your custom role in this function, see the below screenshot for reference</li>
 <li>name it as <code>CSVtoParquetLambda</code></li>
 </ul>
@@ -44,14 +44,14 @@
 <p>Note: </p>
 <p><code>logging.getLogger(&#39;awswrangler&#39;).setLevel(logging.DEBUG)</code> is to enable debug log to check if anything can go wrong from the awswrangler library. </p>
 </blockquote>
-<h3 id="Trigger-configuration"><a href="#Trigger-configuration" class="headerlink" title="Trigger configuration"></a>Trigger configuration</h3><ul>
+<h4 id="Trigger-configuration"><a href="#Trigger-configuration" class="headerlink" title="Trigger configuration"></a>Trigger configuration</h4><ul>
 <li>configurate trigger to listen on landing S3 bucket (<code>dataeng-landing-zone-etl</code>) when a new file (suffix with <code>.csv</code>) arrives</li>
 </ul>
 <p><img src="/2023/12/19/AWSLambdaETL/triggers.png"></p>
 <ul>
 <li>create a CSV file in your local file system with the below sample fields and values</li>
 </ul>
-<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">Name,favorite_num</span><br><span class="line">Vrinda,22</span><br><span class="line">Tracy,28</span><br><span class="line">Gareth,23</span><br><span class="line">Chris,16</span><br><span class="line">Emma,14</span><br><span class="line">Carlos,7</span><br><span class="line">Cooper,11</span><br><span class="line">Praful,4</span><br><span class="line">David,33</span><br><span class="line">Shilpa,2</span><br><span class="line">Gary,18</span><br><span class="line">Sean,20</span><br><span class="line">Ha-yoon,9</span><br><span class="line">Elizabeth,8</span><br><span class="line">Mary,1</span><br><span class="line">Chen,15</span><br><span class="line">Janet,22</span><br><span class="line">Mariusz,25</span><br><span class="line">Romain,11</span><br><span class="line">Matt,25</span><br><span class="line">Brendan,19</span><br><span class="line">Roger,2</span><br><span class="line">Jack,7</span><br><span class="line">Sachin,17</span><br><span class="line">Francisco,5</span><br><span class="line"></span><br></pre></td></tr></table></figure>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">Name,favorite_num</span><br><span class="line">Vrinda,22</span><br><span class="line">Tracy,28</span><br><span class="line">Gareth,23</span><br><span class="line">Chris,16</span><br><span class="line">Emma,14</span><br><span class="line">Carlos,7</span><br><span class="line">Cooper,11</span><br><span class="line">Praful,4</span><br><span class="line">David,33</span><br><span class="line">Shilpa,2</span><br><span class="line">Gary,18</span><br><span class="line">Sean,20</span><br><span class="line">Ha-yoon,9</span><br><span class="line">Elizabeth,8</span><br><span class="line">Mary,1</span><br><span class="line">Chen,15</span><br><span class="line">Janet,22</span><br><span class="line">Mariusz,25</span><br><span class="line">Romain,11</span><br><span class="line">Matt,25</span><br><span class="line">Brendan,19</span><br><span class="line">Roger,2</span><br><span class="line">Jack,7</span><br><span class="line">Sachin,17</span><br><span class="line">Francisco,5</span><br></pre></td></tr></table></figure>
 
 <ul>
 <li>upload the CSV file to the remote bucket <code>dataeng-landing-zone-etl</code> using <code>aws</code> CLI</li>
@@ -63,7 +63,7 @@
 </ul>
 <figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">aws s3 ls s3://dataeng-clean-zone-etl/testdb/csvparquet/</span><br><span class="line"><span class="meta prompt_">#</span><span class="language-bash"><span class="comment"># expected output</span></span> </span><br><span class="line">2023-12-19 16:03:57       2199 d5d09abfbfda4117b544a0bca1f8a134.snappy.parquet</span><br></pre></td></tr></table></figure>
 
-<h2 id="Possible-Issues"><a href="#Possible-Issues" class="headerlink" title="Possible Issues"></a>Possible Issues</h2><ul>
+<h4 id="Possible-Issues"><a href="#Possible-Issues" class="headerlink" title="Possible Issues"></a>Possible Issues</h4><ul>
 <li>Lamdba function execution timeout shown in CloudWatch log</li>
 </ul>
 <figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">1702972039080,&quot;[DEBUG]	2023-12-19T07:47:19.080Z	ada71ff1-340e-4389-92d6-7dc967e09483	Applying default config argument verify with value None.</span><br><span class="line">&quot;</span><br><span class="line">1702972040916,&#x27;&quot;- Database testdb already exists</span><br><span class="line">&quot;</span><br><span class="line">1702972040937,&quot;[DEBUG]	2023-12-19T07:47:20.937Z	Applying default config argument botocore_config with value None.</span><br><span class="line">&quot;</span><br><span class="line">1702972040937,&quot;[DEBUG]	2023-12-19T07:47:20.937Z	Applying default config argument verify with value None.</span><br><span class="line">&quot;</span><br><span class="line">1702972043538,&quot;[DEBUG]	2023-12-19T07:47:23.518Z	Applying default config argument botocore_config with value None.</span><br><span class="line">&quot;</span><br><span class="line">1702972043538,&quot;[DEBUG]	2023-12-19T07:47:23.538Z	Applying default config argument verify with value None.</span><br><span class="line">&quot;</span><br><span class="line">1702972214725,&quot;2023-12-19T07:50:14.725Z Task timed out after 182.10 seconds</span><br></pre></td></tr></table></figure>
