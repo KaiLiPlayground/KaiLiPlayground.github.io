@@ -208,9 +208,20 @@
     
         <span class="article-update-date article-meta-item">
         <i class="fas fa-file-pen"></i>&nbsp;
-        <span class="pc">2023-12-19 22:04:06</span>
+        <span class="pc">2023-12-25 13:56:55</span>
     </span>
     
+    
+        <span class="article-categories article-meta-item">
+            <i class="fas fa-folder"></i>&nbsp;
+            <ul>
+                
+                    <li>
+                        <a href="/categories/AWS/">AWS</a>&nbsp;
+                    </li>
+                
+            </ul>
+        </span>
     
     
         <span class="article-tags article-meta-item">
@@ -222,11 +233,11 @@
                     </li>
                 
                     <li>
-                        | <a href="/tags/ETL/">ETL</a>&nbsp;
+                        | <a href="/tags/Lambda/">Lambda</a>&nbsp;
                     </li>
                 
                     <li>
-                        | <a href="/tags/Lambda/">Lambda</a>&nbsp;
+                        | <a href="/tags/ETL/">ETL</a>&nbsp;
                     </li>
                 
             </ul>
@@ -310,7 +321,7 @@
 <h4 id="Possible-Issues"><a href="#Possible-Issues" class="headerlink" title="Possible Issues"></a>Possible Issues</h4><ul>
 <li>Lamdba function execution timeout shown in CloudWatch log</li>
 </ul>
-<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><span class="line">1702972039080,&quot;[DEBUG]	2023-12-19T07:47:19.080Z	Applying default config argument verify with value None.</span><br><span class="line">&quot;</span><br><span class="line">1702972040916,&#x27;&quot;- Database testdb already exists</span><br><span class="line">&quot;</span><br><span class="line">1702972040937,&quot;[DEBUG]	2023-12-19T07:47:20.937Z	Applying default config argument botocore_config with value None.</span><br><span class="line">&quot;</span><br><span class="line">1702972040937,&quot;[DEBUG]	2023-12-19T07:47:20.937Z	Applying default config argument verify with value None.</span><br><span class="line">&quot;</span><br><span class="line">1702972043538,&quot;[DEBUG]	2023-12-19T07:47:23.518Z	Applying default config argument botocore_config with value None.</span><br><span class="line">&quot;</span><br><span class="line">1702972043538,&quot;[DEBUG]	2023-12-19T07:47:23.538Z	Applying default config argument verify with value None.</span><br><span class="line">&quot;</span><br><span class="line">1702972214725,&quot;2023-12-19T07:50:14.725Z Task timed out after 182.10 seconds</span><br></pre></td></tr></table></figure>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><span class="line">1702972039080,&quot;[DEBUG]    2023-12-19T07:47:19.080Z    Applying default config argument verify with value None.</span><br><span class="line">&quot;</span><br><span class="line">1702972040916,&#x27;&quot;- Database testdb already exists</span><br><span class="line">&quot;</span><br><span class="line">1702972040937,&quot;[DEBUG]    2023-12-19T07:47:20.937Z    Applying default config argument botocore_config with value None.</span><br><span class="line">&quot;</span><br><span class="line">1702972040937,&quot;[DEBUG]    2023-12-19T07:47:20.937Z    Applying default config argument verify with value None.</span><br><span class="line">&quot;</span><br><span class="line">1702972043538,&quot;[DEBUG]    2023-12-19T07:47:23.518Z    Applying default config argument botocore_config with value None.</span><br><span class="line">&quot;</span><br><span class="line">1702972043538,&quot;[DEBUG]    2023-12-19T07:47:23.538Z    Applying default config argument verify with value None.</span><br><span class="line">&quot;</span><br><span class="line">1702972214725,&quot;2023-12-19T07:50:14.725Z Task timed out after 182.10 seconds</span><br></pre></td></tr></table></figure>
 
 <blockquote>
 <p>Based on the code in the Lambda function, we know Database <code>testdb</code> exists is harmless and expected. But the execution got timed out afterwards. Initially, the function was set at 3 minutes, although the CSV file was only 128 bytes in my case, it still got timed out. </p>
@@ -322,7 +333,7 @@
 </ul>
 </li>
 </ul>
-<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">2023-12-19T16:03:53.249+08:00	START RequestId: 67114d4d-25cf-42f2-xxx6e6 Version: $LATEST </span><br><span class="line"></span><br><span class="line"># omitted the intermediate lines </span><br><span class="line"></span><br><span class="line">2023-12-19T16:03:56.713+08:00	&#123;&#x27;paths&#x27;: [&#x27;s3://dataeng-clean-zone-etl/testdb/csvparquet/d5d09abfbfda4117b544a0bca1f8a134.snappy.parquet&#x27;], &#x27;partitions_values&#x27;: &#123;&#125;&#125;</span><br><span class="line">2023-12-19T16:03:56.715+08:00	END RequestId: 67114d4d-25cf-42f2-be60-xxx6e6 </span><br></pre></td></tr></table></figure>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">2023-12-19T16:03:53.249+08:00    START RequestId: 67114d4d-25cf-42f2-xxx6e6 Version: $LATEST </span><br><span class="line"></span><br><span class="line"># omitted the intermediate lines </span><br><span class="line"></span><br><span class="line">2023-12-19T16:03:56.713+08:00    &#123;&#x27;paths&#x27;: [&#x27;s3://dataeng-clean-zone-etl/testdb/csvparquet/d5d09abfbfda4117b544a0bca1f8a134.snappy.parquet&#x27;], &#x27;partitions_values&#x27;: &#123;&#125;&#125;</span><br><span class="line">2023-12-19T16:03:56.715+08:00    END RequestId: 67114d4d-25cf-42f2-be60-xxx6e6 </span><br></pre></td></tr></table></figure>
 
 <blockquote>
 <p>After examing the time duration for the new Lambda run based on the 10-minutes timeout Lambda definition, our Lambda run completed without error. </p>
@@ -343,16 +354,36 @@
                         </li>
                     
                         <li class="tag-item">
-                            <a href="/tags/ETL/">#ETL</a>&nbsp;
+                            <a href="/tags/Lambda/">#Lambda</a>&nbsp;
                         </li>
                     
                         <li class="tag-item">
-                            <a href="/tags/Lambda/">#Lambda</a>&nbsp;
+                            <a href="/tags/ETL/">#ETL</a>&nbsp;
                         </li>
                     
                 </ul>
             
 
+            
+                <div class="article-nav">
+                    
+                        <div class="article-prev">
+                            <a class="prev"
+                               rel="prev"
+                               href="/2023/12/25/lakeformation/"
+                            >
+                            <span class="left arrow-icon flex-center">
+                              <i class="fas fa-chevron-left"></i>
+                            </span>
+                                <span class="title flex-center">
+                                <span class="post-nav-title-item">Managing Fine-grained Permission with AWS Lake Formation</span>
+                                <span class="post-nav-item">Prev posts</span>
+                            </span>
+                            </a>
+                        </div>
+                    
+                    
+                </div>
             
 
             
