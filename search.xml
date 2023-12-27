@@ -1,84 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <search>
   <entry>
-    <title>DataMigration</title>
-    <url>/2023/12/27/DataMigration/</url>
-    <content><![CDATA[<h1 id="Ingesting-Data-with-AWS-DMS"><a href="#Ingesting-Data-with-AWS-DMS" class="headerlink" title="Ingesting Data with AWS DMS"></a>Ingesting Data with AWS DMS</h1><p>Following <a class="link"   href="https://subscription.packtpub.com/book/data/9781804614426/8/ch08lvl1sec51/hands-on-ingesting-data-with-aws-dms?_gl=1*1eoz65u*_gcl_au*MTI5MjU4OTg2MC4xNzAzNDg0Mzg5*_ga*MjExODIxOTUyMS4xNzAzNDg0Mzg5*_ga_Q4R8G7SJDK*MTcwMzY1NDkwNC4yLjEuMTcwMzY1NDkyOC4zNi4wLjA." >Ingesting Data with AWS DMS<i class="fas fa-external-link-alt"></i></a>, we learned how to set up the data ingestion with DMS by creating a MySQL SQL instance, EC2 instance for data population, the required access policy and role creation, and Database migration tasks. </p>
-<p>Here is a flowchart for the setup:<br><img src="/2023/12/27/DataMigration/AWSServiceSetupFlowchart.png"></p>
-<ol>
-<li>Create a MySQL instance </li>
-<li>Create an EC2 instance </li>
-<li>Create an IAM policy and role for DMS</li>
-<li>DMS setup for a full load from MySQL to S3</li>
-<li>Query data with Athena</li>
-</ol>
-<p>However, the setup is not a smooth ride as the book I used published in 2021 and it has missed some pivotal steps. Here, I will point out the pivot step and the troubleshooting steps that I used to resolve the issue. </p>
-<h2 id="Issue"><a href="#Issue" class="headerlink" title="Issue"></a>Issue</h2><p>The main issue lies in <strong>step 1</strong> and <strong>step 2</strong> that the data population scripts were not taking effect when it tried to load data into the MySQL server. </p>
-<h3 id="Issue-Behavior"><a href="#Issue-Behavior" class="headerlink" title="Issue Behavior"></a>Issue Behavior</h3><h4 id="Data-Population-Script"><a href="#Data-Population-Script" class="headerlink" title="Data Population Script"></a>Data Population Script</h4><figure class="highlight shell"><table><tr><td class="code"><pre><span class="line"><span class="meta prompt_">#</span><span class="language-bash">!/bin/bash</span></span><br><span class="line">yum install -y mariadb</span><br><span class="line">curl https://downloads.mysql.com/docs/sakila-db.zip -o sakila.zip</span><br><span class="line">unzip sakila.zip</span><br><span class="line">cd sakila-db</span><br><span class="line">mysql --host=HOST --user=admin --password=PASSWORD -f &lt; sakila-schema.sql</span><br><span class="line">mysql --host=HOST --user=admin --password=PASSWORD -f &lt; sakila-data.sql</span><br></pre></td></tr></table></figure>
-
-<p>The script downloads the data population sql script from MySQL site then runs them against the MySQL instance endpoint. </p>
-<p>Normally, the next step is to check if MySQL has the Database and tables by connecting to MySQL server. However, I found that the connection was rejected from the EC2 instance. Furthermore, we can check the TCP connection with <code>telnet</code> for which we have: </p>
-<figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">[ec2-user@ip-172-31-15-160 ~]$ telnet database-1.cgppbdvzhe7r.ap-southeast-2.rds.amazonaws.com 3306</span><br><span class="line">Trying 172.31.42.75...</span><br><span class="line">telnet: connect to address 172.31.42.75: Connection timed out</span><br></pre></td></tr></table></figure>
-
-<p>As per the steps, we can also verify from the Athena side to check which tables are finally getting catalogged (remember: we have a lambda function set up in <a href="/2023/12/19/AWSLambdaETL/" title="AWS Lambda ETL">AWS Lambda ETL</a> which capture newly loaded CSV in landing zone S3 bucket and convert it to parquet and loads it in clean zone S3 bucket by which new files will get catalogged). </p>
-<p>By checking Athena query editor, we can see that data was not found, see the below image:<br><img src="/2023/12/27/DataMigration/preNSGwhitelist.png"></p>
-<h2 id="Solution"><a href="#Solution" class="headerlink" title="Solution"></a>Solution</h2><p>According the behavior discovered, we know the steps of the book section missed an important validation. That is, the network connection has yet confirmed between EC2 and MySQL server instance. </p>
-<p>Since both MySQL instance and EC2 intance are using the same AWS managed VPC, we can set up two security groups to connect the MySQL database and EC2 instance.<br><img src="/2023/12/27/DataMigration/ec2_connection.png"> </p>
-<p>After setting up the connection in VPC for the two services by adding security group rules, we need to run the data population script to load the data to MySQL instance in EC2. </p>
-<h3 id="Validation"><a href="#Validation" class="headerlink" title="Validation"></a>Validation</h3><ul>
-<li><p>Check MySQL server databases</p>
-<figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">  MySQL [(none)]&gt; show databases;</span><br><span class="line">+--------------------+</span><br><span class="line">| Database           |</span><br><span class="line">+--------------------+</span><br><span class="line">| information_schema |</span><br><span class="line">| mysql              |</span><br><span class="line">| performance_schema |</span><br><span class="line">| sakila             | # sakila is loaded as intended</span><br><span class="line">| sys                |</span><br><span class="line">+--------------------+</span><br></pre></td></tr></table></figure>
-</li>
-<li><p>check S3 landing and clean buckets</p>
-<ul>
-<li><p>landing zone (CSV files)<br><img src="/2023/12/27/DataMigration/s3_landing_zone.png"></p>
-</li>
-<li><p>landing zone <code>actor</code> folder (pick one for reference)<br><img src="/2023/12/27/DataMigration/landing_actor_src_csv.png"></p>
-</li>
-<li><p>clean zone (parquet files)<br><img src="/2023/12/27/DataMigration/clean_zone.png"> </p>
-</li>
-<li><p>clean zone <code>actor</code> folder (pick one for reference)</p>
-</li>
-</ul>
-<ul>
-<li>check Athena query editor to valid if all files are catalogged<br><img src="/2023/12/27/DataMigration/data_populated.png"></li>
-</ul>
-</li>
-</ul>
-<p>The file changes capturing in landing zone and conversion in clean zone along with catalogging is set up in the Lambda function in <a href="/2023/12/19/AWSLambdaETL/" title="AWS Lambda ETL">AWS Lambda ETL</a>. </p>
-]]></content>
-      <categories>
-        <category>AWS</category>
-      </categories>
-      <tags>
-        <tag>AWS</tag>
-        <tag>AWS Ingestion</tag>
-        <tag>AWS DMS Migration</tag>
-      </tags>
-  </entry>
-  <entry>
-    <title>Managing Fine-grained Permission with AWS Lake Formation</title>
-    <url>/2023/12/25/LakeFormation/</url>
-    <content><![CDATA[<h1 id="Granting-Lake-Formation-Permissions"><a href="#Granting-Lake-Formation-Permissions" class="headerlink" title="Granting Lake Formation Permissions"></a>Granting Lake Formation Permissions</h1><h3 id="Prerequite"><a href="#Prerequite" class="headerlink" title="Prerequite"></a>Prerequite</h3><p>Following the instruction of <a class="link"   href="https://subscription.packtpub.com/book/data/9781804614426/5/ch05lvl1sec33/hands-on-configuring-lake-formation-permissions" >LakeFormation permissions<i class="fas fa-external-link-alt"></i></a>, the intended IAM policies to manage fine-grained access control for data lake has been configured. We now use transition to using Lake Formation to manage fine-grained permission on data lake object. </p>
-<h2 id="Motivation-and-Issue"><a href="#Motivation-and-Issue" class="headerlink" title="Motivation and Issue"></a>Motivation and Issue</h2><p>Our goal is to experiment with the granular permission data acess on the column level access of a table in Lake Formation. </p>
-<p>At the time of writing this post, the data filter row access UI button is not working, see the below image for reference: </p>
-<p><img src="/2023/12/25/LakeFormation/dataFilter.png" alt="datafilter"></p>
-<h2 id="Solution"><a href="#Solution" class="headerlink" title="Solution"></a>Solution</h2><p>We can use AWS CLI as a workaround to UI button issue to allow principal user accessing one specifc column only while blocking the others and allow access to all rows. Here the sample AWS CLI command: </p>
-<figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">aws lakeformation grant-permissions \</span><br><span class="line">--principal DataLakePrincipalIdentifier=arn:aws:iam::&lt;account-id&gt;:user/database-user&quot; \</span><br><span class="line">--resource &#x27;&#123;&quot;TableWithColumns&quot;:&#123;&quot;DatabaseName&quot;:&quot;testdb&quot;,&quot;Name&quot;:&quot;csvparquet&quot;,&quot;ColumnNames&quot;:[&quot;name&quot;]&#125;&#125;&#x27; \</span><br><span class="line">--permissions &quot;SELECT&quot; \</span><br><span class="line">--permissions-with-grant-option &quot;SELECT&quot; \</span><br><span class="line">--profile &quot;&lt;Profile Name&gt;&quot;</span><br></pre></td></tr></table></figure>
-
-<p>In this command, we are allowing the specified principal user to have access to column <code>name</code> but restricting others. The <code>csvparquet</code> table has columns, <code>name</code> and <code>favorite_num</code>. The expected output for querying against the table using the specified principal user is that only column <code>name</code> is showing, see the below image for reference: </p>
-<p><img src="/2023/12/25/LakeFormation/athenaquery.png"></p>
-<hr>
-]]></content>
-      <categories>
-        <category>AWS</category>
-      </categories>
-      <tags>
-        <tag>AWS LakeFormation</tag>
-        <tag>Fine-grained Permission</tag>
-      </tags>
-  </entry>
-  <entry>
     <title>AWS Lambda ETL</title>
     <url>/2023/12/19/AWSLambdaETL/</url>
     <content><![CDATA[<h1 id="Triggering-an-AWS-Lambda-function-when-a-new-file-arrives-in-an-S3-bucket"><a href="#Triggering-an-AWS-Lambda-function-when-a-new-file-arrives-in-an-S3-bucket" class="headerlink" title="Triggering an AWS Lambda function when a new file arrives in an S3 bucket"></a>Triggering an AWS Lambda function when a new file arrives in an S3 bucket</h1><h3 id="Creating-a-Lambda-layer-containeing-the-AWS-Data-Wrangler-library"><a href="#Creating-a-Lambda-layer-containeing-the-AWS-Data-Wrangler-library" class="headerlink" title="Creating a Lambda layer containeing the AWS Data Wrangler library"></a>Creating a Lambda layer containeing the AWS Data Wrangler library</h3><h4 id="Layer-Creation"><a href="#Layer-Creation" class="headerlink" title="Layer Creation"></a>Layer Creation</h4><p><img src="/2023/12/19/AWSLambdaETL/layerCreation.png"></p>
@@ -172,6 +94,84 @@
         <tag>AWS</tag>
         <tag>AWS Lambda</tag>
         <tag>ETL</tag>
+      </tags>
+  </entry>
+  <entry>
+    <title>Data Migration</title>
+    <url>/2023/12/27/DataMigration/</url>
+    <content><![CDATA[<h1 id="Ingesting-Data-with-AWS-DMS"><a href="#Ingesting-Data-with-AWS-DMS" class="headerlink" title="Ingesting Data with AWS DMS"></a>Ingesting Data with AWS DMS</h1><p>Following <a class="link"   href="https://subscription.packtpub.com/book/data/9781804614426/8/ch08lvl1sec51/hands-on-ingesting-data-with-aws-dms?_gl=1*1eoz65u*_gcl_au*MTI5MjU4OTg2MC4xNzAzNDg0Mzg5*_ga*MjExODIxOTUyMS4xNzAzNDg0Mzg5*_ga_Q4R8G7SJDK*MTcwMzY1NDkwNC4yLjEuMTcwMzY1NDkyOC4zNi4wLjA." >Ingesting Data with AWS DMS<i class="fas fa-external-link-alt"></i></a>, we learned how to set up the data ingestion with DMS by creating a MySQL SQL instance, EC2 instance for data population, the required access policy and role creation, and Database migration tasks. </p>
+<p>Here is a flowchart for the setup:<br><img src="/2023/12/27/DataMigration/AWSServiceSetupFlowchart.png"></p>
+<ol>
+<li>Create a MySQL instance </li>
+<li>Create an EC2 instance </li>
+<li>Create an IAM policy and role for DMS</li>
+<li>DMS setup for a full load from MySQL to S3</li>
+<li>Query data with Athena</li>
+</ol>
+<p>However, the setup is not a smooth ride as the book I used published in 2021 and it has missed some pivotal steps. Here, I will point out the pivot step and the troubleshooting steps that I used to resolve the issue. </p>
+<h2 id="Issue"><a href="#Issue" class="headerlink" title="Issue"></a>Issue</h2><p>The main issue lies in <strong>step 1</strong> and <strong>step 2</strong> that the data population scripts were not taking effect when it tried to load data into the MySQL server. </p>
+<h3 id="Issue-Behavior"><a href="#Issue-Behavior" class="headerlink" title="Issue Behavior"></a>Issue Behavior</h3><h4 id="Data-Population-Script"><a href="#Data-Population-Script" class="headerlink" title="Data Population Script"></a>Data Population Script</h4><figure class="highlight shell"><table><tr><td class="code"><pre><span class="line"><span class="meta prompt_">#</span><span class="language-bash">!/bin/bash</span></span><br><span class="line">yum install -y mariadb</span><br><span class="line">curl https://downloads.mysql.com/docs/sakila-db.zip -o sakila.zip</span><br><span class="line">unzip sakila.zip</span><br><span class="line">cd sakila-db</span><br><span class="line">mysql --host=HOST --user=admin --password=PASSWORD -f &lt; sakila-schema.sql</span><br><span class="line">mysql --host=HOST --user=admin --password=PASSWORD -f &lt; sakila-data.sql</span><br></pre></td></tr></table></figure>
+
+<p>The script downloads the data population sql script from MySQL site then runs them against the MySQL instance endpoint. </p>
+<p>Normally, the next step is to check if MySQL has the Database and tables by connecting to MySQL server. However, I found that the connection was rejected from the EC2 instance. Furthermore, we can check the TCP connection with <code>telnet</code> for which we have: </p>
+<figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">[ec2-user@ip-172-31-15-160 ~]$ telnet database-1.cgppbdvzhe7r.ap-southeast-2.rds.amazonaws.com 3306</span><br><span class="line">Trying 172.31.42.75...</span><br><span class="line">telnet: connect to address 172.31.42.75: Connection timed out</span><br></pre></td></tr></table></figure>
+
+<p>As per the steps, we can also verify from the Athena side to check which tables are finally getting catalogged (remember: we have a lambda function set up in <a href="/2023/12/19/AWSLambdaETL/" title="AWS Lambda ETL">AWS Lambda ETL</a> which capture newly loaded CSV in landing zone S3 bucket and convert it to parquet and loads it in clean zone S3 bucket by which new files will get catalogged). </p>
+<p>By checking Athena query editor, we can see that data was not found, see the below image:<br><img src="/2023/12/27/DataMigration/preNSGwhitelist.png"></p>
+<h2 id="Solution"><a href="#Solution" class="headerlink" title="Solution"></a>Solution</h2><p>According the behavior discovered, we know the steps of the book section missed an important validation. That is, the network connection has yet confirmed between EC2 and MySQL server instance. </p>
+<p>Since both MySQL instance and EC2 intance are using the same AWS managed VPC, we can set up two security groups to connect the MySQL database and EC2 instance.<br><img src="/2023/12/27/DataMigration/ec2_connection.png"> </p>
+<p>After setting up the connection in VPC for the two services by adding security group rules, we need to run the data population script to load the data to MySQL instance in EC2. </p>
+<h3 id="Validation"><a href="#Validation" class="headerlink" title="Validation"></a>Validation</h3><ul>
+<li><p>Check MySQL server databases</p>
+<figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">  MySQL [(none)]&gt; show databases;</span><br><span class="line">+--------------------+</span><br><span class="line">| Database           |</span><br><span class="line">+--------------------+</span><br><span class="line">| information_schema |</span><br><span class="line">| mysql              |</span><br><span class="line">| performance_schema |</span><br><span class="line">| sakila             | # sakila is loaded as intended</span><br><span class="line">| sys                |</span><br><span class="line">+--------------------+</span><br></pre></td></tr></table></figure>
+</li>
+<li><p>check S3 landing and clean buckets</p>
+<ul>
+<li><p>landing zone (CSV files)<br><img src="/2023/12/27/DataMigration/s3_landing_zone.png"></p>
+</li>
+<li><p>landing zone <code>actor</code> folder (pick one for reference)<br><img src="/2023/12/27/DataMigration/landing_actor_src_csv.png"></p>
+</li>
+<li><p>clean zone (parquet files)<br><img src="/2023/12/27/DataMigration/clean_zone.png"> </p>
+</li>
+<li><p>clean zone <code>actor</code> folder (pick one for reference)</p>
+</li>
+</ul>
+<ul>
+<li>check Athena query editor to valid if all files are catalogged<br><img src="/2023/12/27/DataMigration/data_populated.png"></li>
+</ul>
+</li>
+</ul>
+<p>The file changes capturing in landing zone and conversion in clean zone along with catalogging is set up in the Lambda function in <a href="/2023/12/19/AWSLambdaETL/" title="AWS Lambda ETL">AWS Lambda ETL</a>. </p>
+]]></content>
+      <categories>
+        <category>AWS</category>
+      </categories>
+      <tags>
+        <tag>AWS</tag>
+        <tag>AWS Ingestion</tag>
+        <tag>AWS DMS Migration</tag>
+      </tags>
+  </entry>
+  <entry>
+    <title>Managing Fine-grained Permission with AWS Lake Formation</title>
+    <url>/2023/12/25/LakeFormationNew/</url>
+    <content><![CDATA[<h1 id="Granting-Lake-Formation-Permissions"><a href="#Granting-Lake-Formation-Permissions" class="headerlink" title="Granting Lake Formation Permissions"></a>Granting Lake Formation Permissions</h1><h3 id="Prerequite"><a href="#Prerequite" class="headerlink" title="Prerequite"></a>Prerequite</h3><p>Following the instruction of <a class="link"   href="https://subscription.packtpub.com/book/data/9781804614426/5/ch05lvl1sec33/hands-on-configuring-lake-formation-permissions" >LakeFormation permissions<i class="fas fa-external-link-alt"></i></a>, the intended IAM policies to manage fine-grained access control for data lake has been configured. We now use transition to using Lake Formation to manage fine-grained permission on data lake object. </p>
+<h2 id="Motivation-and-Issue"><a href="#Motivation-and-Issue" class="headerlink" title="Motivation and Issue"></a>Motivation and Issue</h2><p>Our goal is to experiment with the granular permission data acess on the column level access of a table in Lake Formation. </p>
+<p>At the time of writing this post, the data filter row access UI button is not working, see the below image for reference: </p>
+<p><img src="/2023/12/25/LakeFormationNew/dataFilter.png" alt="datafilter"></p>
+<h2 id="Solution"><a href="#Solution" class="headerlink" title="Solution"></a>Solution</h2><p>We can use AWS CLI as a workaround to UI button issue to allow principal user accessing one specifc column only while blocking the others and allow access to all rows. Here the sample AWS CLI command: </p>
+<figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">aws lakeformation grant-permissions \</span><br><span class="line">--principal DataLakePrincipalIdentifier=arn:aws:iam::&lt;account-id&gt;:user/database-user&quot; \</span><br><span class="line">--resource &#x27;&#123;&quot;TableWithColumns&quot;:&#123;&quot;DatabaseName&quot;:&quot;testdb&quot;,&quot;Name&quot;:&quot;csvparquet&quot;,&quot;ColumnNames&quot;:[&quot;name&quot;]&#125;&#125;&#x27; \</span><br><span class="line">--permissions &quot;SELECT&quot; \</span><br><span class="line">--permissions-with-grant-option &quot;SELECT&quot; \</span><br><span class="line">--profile &quot;&lt;Profile Name&gt;&quot;</span><br></pre></td></tr></table></figure>
+
+<p>In this command, we are allowing the specified principal user to have access to column <code>name</code> but restricting others. The <code>csvparquet</code> table has columns, <code>name</code> and <code>favorite_num</code>. The expected output for querying against the table using the specified principal user is that only column <code>name</code> is showing, see the below image for reference: </p>
+<p><img src="/2023/12/25/LakeFormationNew/athenaquery.png"></p>
+<hr>
+]]></content>
+      <categories>
+        <category>AWS</category>
+      </categories>
+      <tags>
+        <tag>AWS LakeFormation</tag>
+        <tag>Fine-grained Permission</tag>
       </tags>
   </entry>
 </search>
