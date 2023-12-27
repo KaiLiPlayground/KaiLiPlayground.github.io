@@ -208,7 +208,7 @@
     
         <span class="article-update-date article-meta-item">
         <i class="fas fa-file-pen"></i>&nbsp;
-        <span class="pc">2023-12-27 14:12:12</span>
+        <span class="pc">2023-12-27 14:22:51</span>
     </span>
     
     
@@ -275,31 +275,32 @@
 <p>Normally, the next step is to check if MySQL has the Database and tables by connecting to MySQL server. However, I found that the connection was rejected from the EC2 instance. Furthermore, we can check the TCP connection with <code>telnet</code> for which we have: </p>
 <figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">[ec2-user@ip-172-31-15-160 ~]$ telnet database-1.cgppbdvzhe7r.ap-southeast-2.rds.amazonaws.com 3306</span><br><span class="line">Trying 172.31.42.75...</span><br><span class="line">telnet: connect to address 172.31.42.75: Connection timed out</span><br></pre></td></tr></table></figure>
 
-<p>As per the steps, we can also verify from the Athena side to check which tables are finally getting catalogged (remember: we have a lambda function set up in [lamda](AWS Lambda ETL) which capture newly loaded CSV in landing zone S3 bucket and convert it to parquet and loads it in clean zone S3 bucket by which new files will get catalogged). </p>
+<p>As per the steps, we can also verify from the Athena side to check which tables are finally getting catalogged (remember: we have a lambda function set up in <a href="/2023/12/19/AWSLambdaETL/" title="AWS Lambda ETL">AWS Lambda ETL</a> which capture newly loaded CSV in landing zone S3 bucket and convert it to parquet and loads it in clean zone S3 bucket by which new files will get catalogged). </p>
 <p>By checking Athena query editor, we can see that data was not found, see the below image:<br><img src="/2023/12/27/DataMigration/preNSGwhitelist.png"></p>
 <h2 id="Solution"><a href="#Solution" class="headerlink" title="Solution"></a>Solution</h2><p>According the behavior discovered, we know the steps of the book section missed an important validation. That is, the network connection has yet confirmed between EC2 and MySQL server instance. </p>
 <p>Since both MySQL instance and EC2 intance are using the same AWS managed VPC, we can set up two security groups to connect the MySQL database and EC2 instance.<br><img src="/2023/12/27/DataMigration/ec2_connection.png"> </p>
 <p>After setting up the connection in VPC for the two services by adding security group rules, we need to run the data population script to load the data to MySQL instance in EC2. </p>
 <h3 id="Validation"><a href="#Validation" class="headerlink" title="Validation"></a>Validation</h3><ul>
 <li><p>Check MySQL server databases</p>
-<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line">	MySQL [(none)]&gt; show databases;</span><br><span class="line">+--------------------+</span><br><span class="line">| Database           |</span><br><span class="line">+--------------------+</span><br><span class="line">| information_schema |</span><br><span class="line">| mysql              |</span><br><span class="line">| performance_schema |</span><br><span class="line">| sakila             | # sakila is loaded as intended</span><br><span class="line">| sys                |</span><br><span class="line">+--------------------+</span><br></pre></td></tr></table></figure>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line">  MySQL [(none)]&gt; show databases;</span><br><span class="line">+--------------------+</span><br><span class="line">| Database           |</span><br><span class="line">+--------------------+</span><br><span class="line">| information_schema |</span><br><span class="line">| mysql              |</span><br><span class="line">| performance_schema |</span><br><span class="line">| sakila             | # sakila is loaded as intended</span><br><span class="line">| sys                |</span><br><span class="line">+--------------------+</span><br></pre></td></tr></table></figure>
 </li>
 <li><p>check S3 landing and clean buckets</p>
 <ul>
-<li><p>landing zone (CSV files)<br> <img src="/2023/12/27/DataMigration/s3_landing_zone.png"></p>
+<li><p>landing zone (CSV files)<br><img src="/2023/12/27/DataMigration/s3_landing_zone.png"></p>
 </li>
-<li><p>landing zone <code>actor</code> folder (pick one for reference)<br> <img src="/2023/12/27/DataMigration/landing_actor_src_csv.png"></p>
+<li><p>landing zone <code>actor</code> folder (pick one for reference)<br><img src="/2023/12/27/DataMigration/landing_actor_src_csv.png"></p>
 </li>
-<li><p>clean zone (parquet files)<br> <img src="/2023/12/27/DataMigration/clean_zone.png"> </p>
+<li><p>clean zone (parquet files)<br><img src="/2023/12/27/DataMigration/clean_zone.png"> </p>
 </li>
 <li><p>clean zone <code>actor</code> folder (pick one for reference)</p>
 </li>
 </ul>
-</li>
-<li><p>check Athena query editor to valid if all files are catalogged<br><img src="/2023/12/27/DataMigration/data_populated.png"></p>
+<ul>
+<li>check Athena query editor to valid if all files are catalogged<br><img src="/2023/12/27/DataMigration/data_populated.png"></li>
+</ul>
 </li>
 </ul>
-<p>The file changes capturing in landing zone and conversion in clean zone along with catalogging is set up in the Lambda function in [lamda](AWS Lambda ETL). </p>
+<p>The file changes capturing in landing zone and conversion in clean zone along with catalogging is set up in the Lambda function in <a href="/2023/12/19/AWSLambdaETL/" title="AWS Lambda ETL">AWS Lambda ETL</a>. </p>
 
             </div>
 
