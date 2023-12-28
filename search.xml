@@ -97,6 +97,28 @@
       </tags>
   </entry>
   <entry>
+    <title>Managing Fine-grained Permission with AWS Lake Formation</title>
+    <url>/2023/12/25/LakeFormationNew/</url>
+    <content><![CDATA[<h1 id="Granting-Lake-Formation-Permissions"><a href="#Granting-Lake-Formation-Permissions" class="headerlink" title="Granting Lake Formation Permissions"></a>Granting Lake Formation Permissions</h1><h3 id="Prerequite"><a href="#Prerequite" class="headerlink" title="Prerequite"></a>Prerequite</h3><p>Following the instruction of <a class="link"   href="https://subscription.packtpub.com/book/data/9781804614426/5/ch05lvl1sec33/hands-on-configuring-lake-formation-permissions" >LakeFormation permissions<i class="fas fa-external-link-alt"></i></a>, the intended IAM policies to manage fine-grained access control for data lake has been configured. We now use transition to using Lake Formation to manage fine-grained permission on data lake object. </p>
+<h2 id="Motivation-and-Issue"><a href="#Motivation-and-Issue" class="headerlink" title="Motivation and Issue"></a>Motivation and Issue</h2><p>Our goal is to experiment with the granular permission data acess on the column level access of a table in Lake Formation. </p>
+<p>At the time of writing this post, the data filter row access UI button is not working, see the below image for reference: </p>
+<p><img src="/2023/12/25/LakeFormationNew/dataFilter.png" alt="datafilter"></p>
+<h2 id="Solution"><a href="#Solution" class="headerlink" title="Solution"></a>Solution</h2><p>We can use AWS CLI as a workaround to UI button issue to allow principal user accessing one specifc column only while blocking the others and allow access to all rows. Here the sample AWS CLI command: </p>
+<figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">aws lakeformation grant-permissions \</span><br><span class="line">--principal DataLakePrincipalIdentifier=arn:aws:iam::&lt;account-id&gt;:user/database-user&quot; \</span><br><span class="line">--resource &#x27;&#123;&quot;TableWithColumns&quot;:&#123;&quot;DatabaseName&quot;:&quot;testdb&quot;,&quot;Name&quot;:&quot;csvparquet&quot;,&quot;ColumnNames&quot;:[&quot;name&quot;]&#125;&#125;&#x27; \</span><br><span class="line">--permissions &quot;SELECT&quot; \</span><br><span class="line">--permissions-with-grant-option &quot;SELECT&quot; \</span><br><span class="line">--profile &quot;&lt;Profile Name&gt;&quot;</span><br></pre></td></tr></table></figure>
+
+<p>In this command, we are allowing the specified principal user to have access to column <code>name</code> but restricting others. The <code>csvparquet</code> table has columns, <code>name</code> and <code>favorite_num</code>. The expected output for querying against the table using the specified principal user is that only column <code>name</code> is showing, see the below image for reference: </p>
+<p><img src="/2023/12/25/LakeFormationNew/athenaquery.png"></p>
+<hr>
+]]></content>
+      <categories>
+        <category>AWS</category>
+      </categories>
+      <tags>
+        <tag>AWS LakeFormation</tag>
+        <tag>Fine-grained Permission</tag>
+      </tags>
+  </entry>
+  <entry>
     <title>Data Migration</title>
     <url>/2023/12/27/DataMigration/</url>
     <content><![CDATA[<h1 id="Ingesting-Data-with-AWS-DMS"><a href="#Ingesting-Data-with-AWS-DMS" class="headerlink" title="Ingesting Data with AWS DMS"></a>Ingesting Data with AWS DMS</h1><p>Following <a class="link"   href="https://subscription.packtpub.com/book/data/9781804614426/8/ch08lvl1sec51/hands-on-ingesting-data-with-aws-dms?_gl=1*1eoz65u*_gcl_au*MTI5MjU4OTg2MC4xNzAzNDg0Mzg5*_ga*MjExODIxOTUyMS4xNzAzNDg0Mzg5*_ga_Q4R8G7SJDK*MTcwMzY1NDkwNC4yLjEuMTcwMzY1NDkyOC4zNi4wLjA." >Ingesting Data with AWS DMS<i class="fas fa-external-link-alt"></i></a>, we learned how to set up the data ingestion with DMS by creating a MySQL SQL instance, EC2 instance for data population, the required access policy and role creation, and Database migration tasks. </p>
@@ -153,25 +175,17 @@
       </tags>
   </entry>
   <entry>
-    <title>Managing Fine-grained Permission with AWS Lake Formation</title>
-    <url>/2023/12/25/LakeFormationNew/</url>
-    <content><![CDATA[<h1 id="Granting-Lake-Formation-Permissions"><a href="#Granting-Lake-Formation-Permissions" class="headerlink" title="Granting Lake Formation Permissions"></a>Granting Lake Formation Permissions</h1><h3 id="Prerequite"><a href="#Prerequite" class="headerlink" title="Prerequite"></a>Prerequite</h3><p>Following the instruction of <a class="link"   href="https://subscription.packtpub.com/book/data/9781804614426/5/ch05lvl1sec33/hands-on-configuring-lake-formation-permissions" >LakeFormation permissions<i class="fas fa-external-link-alt"></i></a>, the intended IAM policies to manage fine-grained access control for data lake has been configured. We now use transition to using Lake Formation to manage fine-grained permission on data lake object. </p>
-<h2 id="Motivation-and-Issue"><a href="#Motivation-and-Issue" class="headerlink" title="Motivation and Issue"></a>Motivation and Issue</h2><p>Our goal is to experiment with the granular permission data acess on the column level access of a table in Lake Formation. </p>
-<p>At the time of writing this post, the data filter row access UI button is not working, see the below image for reference: </p>
-<p><img src="/2023/12/25/LakeFormationNew/dataFilter.png" alt="datafilter"></p>
-<h2 id="Solution"><a href="#Solution" class="headerlink" title="Solution"></a>Solution</h2><p>We can use AWS CLI as a workaround to UI button issue to allow principal user accessing one specifc column only while blocking the others and allow access to all rows. Here the sample AWS CLI command: </p>
-<figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">aws lakeformation grant-permissions \</span><br><span class="line">--principal DataLakePrincipalIdentifier=arn:aws:iam::&lt;account-id&gt;:user/database-user&quot; \</span><br><span class="line">--resource &#x27;&#123;&quot;TableWithColumns&quot;:&#123;&quot;DatabaseName&quot;:&quot;testdb&quot;,&quot;Name&quot;:&quot;csvparquet&quot;,&quot;ColumnNames&quot;:[&quot;name&quot;]&#125;&#125;&#x27; \</span><br><span class="line">--permissions &quot;SELECT&quot; \</span><br><span class="line">--permissions-with-grant-option &quot;SELECT&quot; \</span><br><span class="line">--profile &quot;&lt;Profile Name&gt;&quot;</span><br></pre></td></tr></table></figure>
-
-<p>In this command, we are allowing the specified principal user to have access to column <code>name</code> but restricting others. The <code>csvparquet</code> table has columns, <code>name</code> and <code>favorite_num</code>. The expected output for querying against the table using the specified principal user is that only column <code>name</code> is showing, see the below image for reference: </p>
-<p><img src="/2023/12/25/LakeFormationNew/athenaquery.png"></p>
-<hr>
+    <title>Databricks Certification</title>
+    <url>/2023/12/28/DatabricksCertification/</url>
+    <content><![CDATA[<h1 id="Introduction-to-Databricks-Certified-Associate-Developer-for-Apache-Spark-3-0"><a href="#Introduction-to-Databricks-Certified-Associate-Developer-for-Apache-Spark-3-0" class="headerlink" title="Introduction to Databricks Certified Associate Developer for Apache Spark 3.0"></a>Introduction to Databricks Certified Associate Developer for Apache Spark 3.0</h1><p>The <strong>Databricks Certified Associate Developer for Apache Spark 3.0</strong> is a prestigious certification designed for professionals seeking to demonstrate their expertise in Apache Spark, particularly within the Databricks platform. This certification is a benchmark for developers who specialize in Spark, emphasizing their ability to efficiently process and analyze large-scale data. It not only validates an individual’s technical skills in Spark application development, Spark SQL, data frames, and performance optimization but also highlights their proficiency in leveraging Databricks for enhanced data processing. As Spark continues to be a leading platform in big data analytics, this certification offers Spark engineers a competitive edge in the job market, ensuring their skills are recognized and valued in this rapidly evolving field.</p>
+<h1 id="Proof-of-work"><a href="#Proof-of-work" class="headerlink" title="Proof of work"></a>Proof of work</h1><p>Here is my certificate in screenshot: </p>
+<p><img src="/2023/12/28/DatabricksCertification/databricksSparkCertification.png"></p>
 ]]></content>
       <categories>
-        <category>AWS</category>
+        <category>Databricks Spark Certification</category>
       </categories>
       <tags>
-        <tag>AWS LakeFormation</tag>
-        <tag>Fine-grained Permission</tag>
+        <tag>Databricks Certification</tag>
       </tags>
   </entry>
 </search>
