@@ -3,13 +3,13 @@
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
-    <meta name="keywords" content="AWS Lambda">
+    <meta name="keywords" content="Hexo Theme Keep">
     <meta name="description" content="Hexo Theme Keep">
     <meta name="author" content="Kai Li">
     
     <title>
         
-            Managing Fine-grained Permission with AWS Lake Formation |
+            Tag: AWS Kinesis Firehose |
         
         Kai Li
     </title>
@@ -91,7 +91,7 @@
                         </li>
                     
                         <li class="menu-item">
-                            <a class=""
+                            <a class="active"
                                href="/tags"
                             >
                                 TAGS
@@ -146,7 +146,7 @@
                 </li>
             
                 <li class="drawer-menu-item flex-center">
-                    <a class=""
+                    <a class="active"
                        href="/tags">TAGS</a>
                 </li>
             
@@ -176,163 +176,42 @@
 
                 
                     <div class="fade-in-down-animation">
-    <div class="post-page-container">
-        <div class="article-content-container">
-
-            <div class="article-title">
-                <span class="title-hover-animation">Managing Fine-grained Permission with AWS Lake Formation</span>
-            </div>
-
-            
-                <div class="article-header">
-                    <div class="avatar">
-                        <img src="/images/hello_new.jpg">
-                    </div>
-                    <div class="info">
-                        <div class="author">
-                            <span class="name">Kai Li</span>
-                            
-                                <span class="author-label">Lv1</span>
-                            
-                        </div>
-                        <div class="meta-info">
-                            
-<div class="article-meta-info">
-    <span class="article-date article-meta-item">
-        
-            <i class="fa-regular fa-calendar-plus"></i>&nbsp;
-        
-        <span class="pc">2023-12-25 13:47:36</span>
-        <span class="mobile">2023-12-25 13:47</span>
-    </span>
-    
-        <span class="article-update-date article-meta-item">
-        <i class="fas fa-file-pen"></i>&nbsp;
-        <span class="pc">2023-12-27 15:20:41</span>
-    </span>
-    
-    
-        <span class="article-categories article-meta-item">
-            <i class="fas fa-folder"></i>&nbsp;
-            <ul>
-                
-                    <li>
-                        <a href="/categories/AWS/">AWS</a>&nbsp;
-                    </li>
-                
-            </ul>
-        </span>
-    
-    
-        <span class="article-tags article-meta-item">
-            <i class="fas fa-tags"></i>&nbsp;
-            <ul>
-                
-                    <li>
-                        <a href="/tags/AWS-LakeFormation/">AWS LakeFormation</a>&nbsp;
-                    </li>
-                
-                    <li>
-                        | <a href="/tags/Fine-grained-Permission/">Fine-grained Permission</a>&nbsp;
-                    </li>
-                
-            </ul>
-        </span>
-    
-
-    
-    
-    
-    
-</div>
-
-                        </div>
-                    </div>
-                </div>
-            
-
-            <div class="article-content keep-markdown-body">
-                
-
-                <h1 id="Granting-Lake-Formation-Permissions"><a href="#Granting-Lake-Formation-Permissions" class="headerlink" title="Granting Lake Formation Permissions"></a>Granting Lake Formation Permissions</h1><h3 id="Prerequite"><a href="#Prerequite" class="headerlink" title="Prerequite"></a>Prerequite</h3><p>Following the instruction of <a class="link"   target="_blank" rel="noopener" href="https://subscription.packtpub.com/book/data/9781804614426/5/ch05lvl1sec33/hands-on-configuring-lake-formation-permissions" >LakeFormation permissions<i class="fas fa-external-link-alt"></i></a>, the intended IAM policies to manage fine-grained access control for data lake has been configured. We now use transition to using Lake Formation to manage fine-grained permission on data lake object. </p>
-<h2 id="Motivation-and-Issue"><a href="#Motivation-and-Issue" class="headerlink" title="Motivation and Issue"></a>Motivation and Issue</h2><p>Our goal is to experiment with the granular permission data acess on the column level access of a table in Lake Formation. </p>
-<p>At the time of writing this post, the data filter row access UI button is not working, see the below image for reference: </p>
-<p><img src="/2023/12/25/LakeFormationNew/dataFilter.png" alt="datafilter"></p>
-<h2 id="Solution"><a href="#Solution" class="headerlink" title="Solution"></a>Solution</h2><p>We can use AWS CLI as a workaround to UI button issue to allow principal user accessing one specifc column only while blocking the others and allow access to all rows. Here the sample AWS CLI command: </p>
-<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">aws lakeformation grant-permissions \</span><br><span class="line">--principal DataLakePrincipalIdentifier=arn:aws:iam::&lt;account-id&gt;:user/database-user&quot; \</span><br><span class="line">--resource &#x27;&#123;&quot;TableWithColumns&quot;:&#123;&quot;DatabaseName&quot;:&quot;testdb&quot;,&quot;Name&quot;:&quot;csvparquet&quot;,&quot;ColumnNames&quot;:[&quot;name&quot;]&#125;&#125;&#x27; \</span><br><span class="line">--permissions &quot;SELECT&quot; \</span><br><span class="line">--permissions-with-grant-option &quot;SELECT&quot; \</span><br><span class="line">--profile &quot;&lt;Profile Name&gt;&quot;</span><br></pre></td></tr></table></figure>
-
-<p>In this command, we are allowing the specified principal user to have access to column <code>name</code> but restricting others. The <code>csvparquet</code> table has columns, <code>name</code> and <code>favorite_num</code>. The expected output for querying against the table using the specified principal user is that only column <code>name</code> is showing, see the below image for reference: </p>
-<p><img src="/2023/12/25/LakeFormationNew/athenaquery.png"></p>
-<hr>
-
-            </div>
-
-            
-
-            
-                <ul class="post-tags-box">
-                    
-                        <li class="tag-item">
-                            <a href="/tags/AWS-LakeFormation/">#AWS LakeFormation</a>&nbsp;
-                        </li>
-                    
-                        <li class="tag-item">
-                            <a href="/tags/Fine-grained-Permission/">#Fine-grained Permission</a>&nbsp;
-                        </li>
-                    
-                </ul>
-            
-
-            
-                <div class="article-nav">
-                    
-                        <div class="article-prev">
-                            <a class="prev"
-                               rel="prev"
-                               href="/2023/12/27/StreamIngestion/"
-                            >
-                            <span class="left arrow-icon flex-center">
-                              <i class="fas fa-chevron-left"></i>
-                            </span>
-                                <span class="title flex-center">
-                                <span class="post-nav-title-item">StreamIngestion</span>
-                                <span class="post-nav-item">Prev posts</span>
-                            </span>
-                            </a>
-                        </div>
-                    
-                    
-                        <div class="article-next">
-                            <a class="next"
-                               rel="next"
-                               href="/2023/12/19/AWSLambdaETL/"
-                            >
-                            <span class="title flex-center">
-                                <span class="post-nav-title-item">AWS Lambda ETL</span>
-                                <span class="post-nav-item">Next posts</span>
-                            </span>
-                                <span class="right arrow-icon flex-center">
-                              <i class="fas fa-chevron-right"></i>
-                            </span>
-                            </a>
-                        </div>
-                    
-                </div>
-            
-
-            
+    <div class="tag-container">
+        <div class="tag-name"><i class="fas fa-tag"></i>&nbsp;AWS Kinesis Firehose
         </div>
-
-        
-            <div class="toc-content-container">
-                <div class="post-toc-wrap">
-    <div class="post-toc">
-        <ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#Granting-Lake-Formation-Permissions"><span class="nav-number">1.</span> <span class="nav-text">Granting Lake Formation Permissions</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#Prerequite"><span class="nav-number">1.0.1.</span> <span class="nav-text">Prerequite</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#Motivation-and-Issue"><span class="nav-number">1.1.</span> <span class="nav-text">Motivation and Issue</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#Solution"><span class="nav-number">1.2.</span> <span class="nav-text">Solution</span></a></li></ol></li></ol>
-    </div>
+        <div class="tag-post-list">
+            
+<div class="archive-list-container">
+    
+        <section class="archive-item">
+            <div class="archive-item-header">
+                <span class="archive-year">2023</span>
+                <span class="archive-year-post-count">[1]</span>
+            </div>
+            <ul class="article-list">
+                
+                    <li class="article-item">
+                        <a class="article-title"
+                           href="/2023/12/27/StreamIngestion/"
+                        >StreamIngestion</a>
+                        <span class="article-date">12-27</span>
+                    </li>
+                
+            </ul>
+        </section>
+    
 </div>
 
-            </div>
-        
+        </div>
+    </div>
+
+    <div class="tag-paginator">
+        <div class="paginator">
+    
+
+    
+</div>
+
     </div>
 </div>
 
@@ -369,23 +248,6 @@
         </div>
     </div>
 
-    
-        <div class="post-tools">
-            <div class="post-tools-container">
-    <ul class="tools-list">
-        <!-- TOC aside toggle -->
-        
-            <li class="tools-item flex-center toggle-show-toc">
-                <i class="fas fa-list"></i>
-            </li>
-        
-
-        <!-- go comment -->
-        
-    </ul>
-</div>
-
-        </div>
     
 
     <div class="right-bottom-side-tools">
@@ -496,20 +358,6 @@
 
 
 <div class="post-scripts">
-    
-        
-<script src="/js/post-helper.js"></script>
-
-        
-            
-<script src="/js/libs/anime.min.js"></script>
-
-        
-        
-            
-<script src="/js/toc.js"></script>
-
-        
     
 </div>
 
