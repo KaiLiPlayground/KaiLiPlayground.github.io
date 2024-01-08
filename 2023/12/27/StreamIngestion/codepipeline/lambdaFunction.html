@@ -1,0 +1,74 @@
+<p>To enable the Step Function to reference your Lambda functions, you’ll need to add Outputs to your Lambda function CloudFormation template. This allows the ARN (Amazon Resource Name) of the Lambda functions to be outputted and referenced by the Step Function. Both Lambda functions can use a similar template structure, with different names and potentially different code or configurations based on their functionality.</p>
+<p>Let’s modify your existing Lambda function template and add another Lambda function, including the necessary Outputs sections for both.</p>
+<h3 id="Revised-Lambda-Functions-CloudFormation-Template"><a href="#Revised-Lambda-Functions-CloudFormation-Template" class="headerlink" title="Revised Lambda Functions CloudFormation Template"></a>Revised Lambda Functions CloudFormation Template</h3><pre><code class="yaml">AWSTemplateFormatVersion: &#39;2010-09-09&#39;
+Resources:
+  DataEngCheckFileExtFunction:
+    Type: AWS::Lambda::Function
+    Properties:
+      FunctionName: dataeng-check-file-ext
+      Handler: index.lambda_handler
+      Role: !GetAtt LambdaExecutionRole.Arn
+      Runtime: python3.9
+      Code:
+        ZipFile: |
+          # [Your existing Lambda function code here]
+      Timeout: 60
+
+  DataEngRandomFailureGeneratorFunction:
+    Type: AWS::Lambda::Function
+    Properties:
+      FunctionName: dataeng-random-failure-generator
+      Handler: index.lambda_handler
+      Role: !GetAtt LambdaExecutionRole.Arn
+      Runtime: python3.9
+      Code:
+        ZipFile: |
+          from random import randint
+          def lambda_handler(event, context):
+              print(&#39;Processing&#39;)
+              value = randint(0, 2)
+              newval = 10 / value
+              print(f&#39;New Value is: {newval}&#39;)
+              return(newval)
+      Timeout: 60
+
+  LambdaExecutionRole:
+    Type: AWS::IAM::Role
+    Properties:
+      AssumeRolePolicyDocument:
+        Version: &#39;2012-10-17&#39;
+        Statement:
+          - Effect: Allow
+            Principal:
+              Service: [lambda.amazonaws.com]
+            Action: [&#39;sts:AssumeRole&#39;]
+      Policies:
+        - PolicyName: LambdaS3Access
+          PolicyDocument:
+            Version: &#39;2012-10-17&#39;
+            Statement:
+              - Effect: Allow
+                Action: 
+                  - &#39;s3:GetObject&#39;
+                  - &#39;s3:PutObject&#39;
+                Resource: &#39;*&#39;
+
+Outputs:
+  DataEngCheckFileExtFunctionArn:
+    Description: &quot;ARN of dataeng-check-file-ext Lambda Function&quot;
+    Value: !GetAtt DataEngCheckFileExtFunction.Arn
+
+  DataEngRandomFailureGeneratorFunctionArn:
+    Description: &quot;ARN of dataeng-random-failure-generator Lambda Function&quot;
+    Value: !GetAtt DataEngRandomFailureGeneratorFunction.Arn
+</code></pre>
+<h3 id="Integration-with-Step-Function"><a href="#Integration-with-Step-Function" class="headerlink" title="Integration with Step Function"></a>Integration with Step Function</h3><p>In your Step Function CloudFormation template, you can reference these Lambda functions using the <code>Fn::ImportValue</code> function if they are in separate stacks or directly using the <code>!GetAtt</code> intrinsic function if they are part of the same stack.</p>
+<p>For example, if they are in separate stacks, you’d reference the Lambda function ARN in the Step Function definition like this:</p>
+<pre><code class="yaml">Resource: !ImportValue DataEngCheckFileExtFunctionArn
+</code></pre>
+<p>And similarly for the <code>dataeng-random-failure-generator</code> function.</p>
+<h3 id="Notes"><a href="#Notes" class="headerlink" title="Notes"></a>Notes</h3><ul>
+<li>The provided Lambda function code is directly embedded in the CloudFormation template. In a production environment, you might want to store your Lambda code in an S3 bucket and reference it in your CloudFormation template for better manageability.</li>
+<li>Ensure that the IAM role (<code>LambdaExecutionRole</code>) has the necessary permissions for both Lambda functions to execute and interact with other AWS services they need.</li>
+<li>Adjust the Lambda function code as needed based on the specific requirements of each function in your pipeline.</li>
+</ul>

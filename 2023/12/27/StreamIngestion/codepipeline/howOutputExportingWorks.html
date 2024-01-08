@@ -1,0 +1,57 @@
+<p>To reference outputs from another stack in your current CloudFormation template, you use the <code>Fn::ImportValue</code> function. This function allows you to import values that were exported by other stacks. For this to work, the exporting stack must explicitly declare its outputs as exports, and the importing stack can then use these exported values.</p>
+<h3 id="How-it-Works"><a href="#How-it-Works" class="headerlink" title="How it Works:"></a>How it Works:</h3><h4 id="1-Exporting-Outputs-in-One-Stack"><a href="#1-Exporting-Outputs-in-One-Stack" class="headerlink" title="1. Exporting Outputs in One Stack:"></a>1. Exporting Outputs in One Stack:</h4><p>In the stack that creates the resource (e.g., Lambda function), you’ll need to add an <code>Exports</code> section in the Outputs. For example:</p>
+<pre><code class="yaml">Outputs:
+  DataEngCheckFileExtFunctionArn:
+    Value: !GetAtt DataEngCheckFileExtFunction.Arn
+    Export:
+      Name: DataEngCheckFileExtFunctionArn
+</code></pre>
+<p>This snippet exports the ARN of a Lambda function.</p>
+<h4 id="2-Importing-Outputs-in-Another-Stack"><a href="#2-Importing-Outputs-in-Another-Stack" class="headerlink" title="2. Importing Outputs in Another Stack:"></a>2. Importing Outputs in Another Stack:</h4><p>In a separate stack (e.g., the one with the Step Function), you use <code>Fn::ImportValue</code> to import the exported value:</p>
+<pre><code class="yaml">Resource: !ImportValue DataEngCheckFileExtFunctionArn
+</code></pre>
+<p>This snippet imports the ARN of the Lambda function into the Step Function stack.</p>
+<h3 id="Deployment-Process-Without-CodePipeline"><a href="#Deployment-Process-Without-CodePipeline" class="headerlink" title="Deployment Process Without CodePipeline:"></a>Deployment Process Without CodePipeline:</h3><ol>
+<li><strong>Deploy Dependent Stacks First</strong>: You need to deploy the stacks that contain the resources being exported first (e.g., Lambda functions, SNS topics).</li>
+<li><strong>Deploy Consuming Stacks Later</strong>: Once the dependent stacks are successfully deployed and their outputs are exported, you can then deploy the stacks that import those values (e.g., the Step Function stack).</li>
+</ol>
+<h3 id="Automating-with-CodePipeline"><a href="#Automating-with-CodePipeline" class="headerlink" title="Automating with CodePipeline:"></a>Automating with CodePipeline:</h3><p>To automate this process using AWS CodePipeline, you would set up a pipeline that deploys these stacks in the correct order.</p>
+<h4 id="Example-CodePipeline-CloudFormation-Template"><a href="#Example-CodePipeline-CloudFormation-Template" class="headerlink" title="Example CodePipeline CloudFormation Template:"></a>Example CodePipeline CloudFormation Template:</h4><p>Here’s a simplified structure of what the CloudFormation template for setting up such a CodePipeline might look like:</p>
+<pre><code class="yaml">AWSTemplateFormatVersion: &#39;2010-09-09&#39;
+Resources:
+  # Define the CodePipeline and its stages
+  MyCodePipeline:
+    Type: AWS::CodePipeline::Pipeline
+    Properties:
+      # ... Pipeline configuration ...
+      Stages:
+        - Name: Source
+          # ... Source configuration ...
+        - Name: Build
+          # ... Build configuration ...
+        - Name: DeployLambdaFunctions
+          Actions:
+            - Name: DeployLambda
+              ActionTypeId:
+                Category: Deploy
+                Owner: AWS
+                Version: &#39;1&#39;
+                Provider: CloudFormation
+              Configuration:
+                ActionMode: CREATE_UPDATE
+                TemplatePath: # ... Path to your Lambda stack template ...
+                StackName: &quot;LambdaFunctionStack&quot;
+                # ... Other configurations ...
+        - Name: DeploySNS
+          # Similar to above, for SNS stack
+        - Name: DeployStepFunction
+          # Similar to above, for Step Function stack
+
+  # ... Other necessary resources like IAM roles, S3 buckets, etc.
+</code></pre>
+<p>This pipeline has stages that deploy each stack in order. Each deployment stage will use the AWS CloudFormation provider to deploy a specific stack. You need to ensure that the artifacts from the build stage (i.e., packaged CloudFormation templates) are available for these deployment stages.</p>
+<h3 id="Key-Points"><a href="#Key-Points" class="headerlink" title="Key Points:"></a>Key Points:</h3><ul>
+<li>The order of stages in CodePipeline is crucial. Ensure dependent resources are deployed before the resources that need them.</li>
+<li>You can add manual approval steps between stages if needed, especially for production environments.</li>
+<li>Ensure that the IAM roles used by CodePipeline have the necessary permissions to create and manage the resources defined in your CloudFormation templates.</li>
+</ul>

@@ -9,7 +9,7 @@
     
     <title>
         
-            StreamIngestion |
+            Stream Ingestion |
         
         Kai Li
     </title>
@@ -180,7 +180,7 @@
         <div class="article-content-container">
 
             <div class="article-title">
-                <span class="title-hover-animation">StreamIngestion</span>
+                <span class="title-hover-animation">Stream Ingestion</span>
             </div>
 
             
@@ -192,7 +192,7 @@
                         <div class="author">
                             <span class="name">Kai Li</span>
                             
-                                <span class="author-label">Lv1</span>
+                                <span class="author-label">Lv2</span>
                             
                         </div>
                         <div class="meta-info">
@@ -208,7 +208,7 @@
     
         <span class="article-update-date article-meta-item">
         <i class="fas fa-file-pen"></i>&nbsp;
-        <span class="pc">2023-12-29 11:44:13</span>
+        <span class="pc">2023-12-29 13:51:50</span>
     </span>
     
     
@@ -285,7 +285,7 @@
 <li>Configures event invocation settings, including maximum age of events (21600 seconds) and retry attempts (2).</li>
 <li>Sets ephemeral storage size to 512 MB for temporary data.</li>
 <li>Defines an event trigger from an S3 bucket (<code>Bucket1</code>). The function triggers on object creation events in the specified S3 key prefix (<code>streaming/2023/12/</code>).</li>
-<li>Includes AWS Data Wrangler as a Lambda layer for data processing.</li>
+<li>Includes AWS Data Wrangler as a Lambda layer for data processing (already set up in <a href="/2023/12/19/AWSLambdaETL/" title="AWS Lambda ETL">AWS Lambda ETL</a>.).</li>
 <li>Applies runtime management and packaging configurations.</li>
 </ul>
 </li>
@@ -308,6 +308,11 @@
 <p>This template effectively sets up a Lambda function for processing data from an S3 bucket, with security and logging considerations, and the necessary permissions to interact with other AWS services like S3 and Glue.</p>
 <p>Here is a screenshot for the Lambda setup: </p>
 <p><img src="/2023/12/27/StreamIngestion/KinesisFirehoseConsume.png"></p>
+<h2 id="Review"><a href="#Review" class="headerlink" title="Review"></a>Review</h2><p>The data entries are generated using Kinesis Data Generator with the following template, see for <a class="link"   target="_blank" rel="noopener" href="https://github.com/KaiLiPlayground/Data-Engineering-with-AWS-experiments/tree/main/Chapter06#configuring-amazon-kinesis-data-generator-kdg" >KDG generator<i class="fas fa-external-link-alt"></i></a> more details: </p>
+<figure class="highlight json"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br></pre></td><td class="code"><pre><span class="line"><span class="punctuation">&#123;</span></span><br><span class="line">    <span class="attr">&quot;timestamp&quot;</span><span class="punctuation">:</span><span class="string">&quot;&#123;&#123;date.now&#125;&#125;&quot;</span><span class="punctuation">,</span></span><br><span class="line">    <span class="attr">&quot;eventType&quot;</span><span class="punctuation">:</span><span class="string">&quot;&#123;&#123;random.weightedArrayElement(</span></span><br><span class="line"><span class="string">        &#123;</span></span><br><span class="line"><span class="string">            &quot;</span>weights<span class="string">&quot;: [0.3,0.1,0.6],</span></span><br><span class="line"><span class="string">            &quot;</span>data<span class="string">&quot;: [&quot;</span>rent<span class="string">&quot;,&quot;</span>buy<span class="string">&quot;,&quot;</span>trailer<span class="string">&quot;]</span></span><br><span class="line"><span class="string">        &#125;</span></span><br><span class="line"><span class="string">    )&#125;&#125;&quot;</span><span class="punctuation">,</span></span><br><span class="line">    <span class="attr">&quot;film_id&quot;</span><span class="punctuation">:</span><span class="punctuation">&#123;</span><span class="punctuation">&#123;</span>random.number(</span><br><span class="line">    <span class="punctuation">&#123;</span></span><br><span class="line">        <span class="attr">&quot;min&quot;</span><span class="punctuation">:</span><span class="number">1</span><span class="punctuation">,</span></span><br><span class="line">        <span class="attr">&quot;max&quot;</span><span class="punctuation">:</span><span class="number">1000</span></span><br><span class="line">    <span class="punctuation">&#125;</span></span><br><span class="line">    )<span class="punctuation">&#125;</span><span class="punctuation">&#125;</span><span class="punctuation">,</span></span><br><span class="line">    <span class="attr">&quot;distributor&quot;</span><span class="punctuation">:</span><span class="string">&quot;&#123;&#123;random.arrayElement(</span></span><br><span class="line"><span class="string">        [&quot;</span>amazon prime<span class="string">&quot;, &quot;</span>google play<span class="string">&quot;, &quot;</span>apple itunes<span class="string">&quot;,&quot;</span>vudo<span class="string">&quot;, &quot;</span>fandango now<span class="string">&quot;, &quot;</span>microsoft<span class="string">&quot;, &quot;</span>youtube<span class="string">&quot;]</span></span><br><span class="line"><span class="string">    )&#125;&#125;&quot;</span><span class="punctuation">,</span></span><br><span class="line">    <span class="attr">&quot;platform&quot;</span><span class="punctuation">:</span><span class="string">&quot;&#123;&#123;random.arrayElement(</span></span><br><span class="line"><span class="string">        [&quot;</span>ios<span class="string">&quot;, &quot;</span>android<span class="string">&quot;, &quot;</span>xbox<span class="string">&quot;, &quot;</span>playstation<span class="string">&quot;, &quot;</span>smarttv<span class="string">&quot;, &quot;</span>other<span class="string">&quot;]</span></span><br><span class="line"><span class="string">    )&#125;&#125;&quot;</span><span class="punctuation">,</span></span><br><span class="line">    <span class="attr">&quot;state&quot;</span><span class="punctuation">:</span><span class="string">&quot;&#123;&#123;address.state&#125;&#125;&quot;</span></span><br><span class="line"><span class="punctuation">&#125;</span></span><br></pre></td></tr></table></figure>
+
+<h2 id="Expectation"><a href="#Expectation" class="headerlink" title="Expectation"></a>Expectation</h2><p>If all steps are followed correctly, we should be able to query the <code>dataeng_firehose_streaming</code> table entries with AWS Athena. See the below image for reference: </p>
+<p><img src="/2023/12/27/StreamIngestion/athena_query_page.png"></p>
 <h2 id="Benefits-of-the-Approach"><a href="#Benefits-of-the-Approach" class="headerlink" title="Benefits of the Approach"></a>Benefits of the Approach</h2><p>This method provided several key advantages:</p>
 <ul>
 <li><strong>Flexibility and Control</strong>: Using Lambda allowed for more control over the data processing and transformation stages.</li>
@@ -377,7 +382,7 @@
             <div class="toc-content-container">
                 <div class="post-toc-wrap">
     <div class="post-toc">
-        <ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#Streamlining-Data-Processing-with-AWS-Lambda-and-AWS-Data-Wrangler"><span class="nav-number">1.</span> <span class="nav-text">Streamlining Data Processing with AWS Lambda and AWS Data Wrangler</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#The-Challenge"><span class="nav-number">1.1.</span> <span class="nav-text">The Challenge</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#Innovative-Solution"><span class="nav-number">1.2.</span> <span class="nav-text">Innovative Solution</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#What-does-the-YAML-of-the-Lambda-Function-do"><span class="nav-number">1.3.</span> <span class="nav-text">What does the YAML of the Lambda Function do?</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#Benefits-of-the-Approach"><span class="nav-number">1.4.</span> <span class="nav-text">Benefits of the Approach</span></a></li></ol></li></ol>
+        <ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#Streamlining-Data-Processing-with-AWS-Lambda-and-AWS-Data-Wrangler"><span class="nav-number">1.</span> <span class="nav-text">Streamlining Data Processing with AWS Lambda and AWS Data Wrangler</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#The-Challenge"><span class="nav-number">1.1.</span> <span class="nav-text">The Challenge</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#Innovative-Solution"><span class="nav-number">1.2.</span> <span class="nav-text">Innovative Solution</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#What-does-the-YAML-of-the-Lambda-Function-do"><span class="nav-number">1.3.</span> <span class="nav-text">What does the YAML of the Lambda Function do?</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#Review"><span class="nav-number">1.4.</span> <span class="nav-text">Review</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#Expectation"><span class="nav-number">1.5.</span> <span class="nav-text">Expectation</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#Benefits-of-the-Approach"><span class="nav-number">1.6.</span> <span class="nav-text">Benefits of the Approach</span></a></li></ol></li></ol>
     </div>
 </div>
 
@@ -401,7 +406,7 @@
             
                 <span>2020</span> -
             
-            2023
+            2024
             
                 &nbsp;<i class="fas fa-heart icon-animate"></i>
                 &nbsp;<a href="/">Kai Li</a>
