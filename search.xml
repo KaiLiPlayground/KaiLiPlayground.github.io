@@ -111,6 +111,62 @@
       </tags>
   </entry>
   <entry>
+    <title>Data Migration</title>
+    <url>/2023/12/27/DataMigration/</url>
+    <content><![CDATA[<h1 id="Ingesting-Data-with-AWS-DMS"><a href="#Ingesting-Data-with-AWS-DMS" class="headerlink" title="Ingesting Data with AWS DMS"></a>Ingesting Data with AWS DMS</h1><p>Following <a class="link"   href="https://subscription.packtpub.com/book/data/9781804614426/8/ch08lvl1sec51/hands-on-ingesting-data-with-aws-dms?_gl=1*1eoz65u*_gcl_au*MTI5MjU4OTg2MC4xNzAzNDg0Mzg5*_ga*MjExODIxOTUyMS4xNzAzNDg0Mzg5*_ga_Q4R8G7SJDK*MTcwMzY1NDkwNC4yLjEuMTcwMzY1NDkyOC4zNi4wLjA." >Ingesting Data with AWS DMS<i class="fas fa-external-link-alt"></i></a>, we learned how to set up the data ingestion with DMS by creating a MySQL SQL instance, EC2 instance for data population, the required access policy and role creation, and Database migration tasks. </p>
+<p>Here is a flowchart for the setup:<br><img src="/2023/12/27/DataMigration/AWSServiceSetupFlowchart.png"></p>
+<ol>
+<li>Create a MySQL instance </li>
+<li>Create an EC2 instance </li>
+<li>Create an IAM policy and role for DMS</li>
+<li>DMS setup for a full load from MySQL to S3</li>
+<li>Query data with Athena</li>
+</ol>
+<p>However, the setup is not a smooth ride as the book I used published in 2021 and it has missed some pivotal steps. Here, I will point out the pivot step and the troubleshooting steps that I used to resolve the issue. </p>
+<h2 id="Issue"><a href="#Issue" class="headerlink" title="Issue"></a>Issue</h2><p>The main issue lies in <strong>step 1</strong> and <strong>step 2</strong> that the data population scripts were not taking effect when it tried to load data into the MySQL server. </p>
+<h3 id="Issue-Behavior"><a href="#Issue-Behavior" class="headerlink" title="Issue Behavior"></a>Issue Behavior</h3><h4 id="Data-Population-Script"><a href="#Data-Population-Script" class="headerlink" title="Data Population Script"></a>Data Population Script</h4><figure class="highlight shell"><table><tr><td class="code"><pre><span class="line"><span class="meta prompt_">#</span><span class="language-bash">!/bin/bash</span></span><br><span class="line">yum install -y mariadb</span><br><span class="line">curl https://downloads.mysql.com/docs/sakila-db.zip -o sakila.zip</span><br><span class="line">unzip sakila.zip</span><br><span class="line">cd sakila-db</span><br><span class="line">mysql --host=HOST --user=admin --password=PASSWORD -f &lt; sakila-schema.sql</span><br><span class="line">mysql --host=HOST --user=admin --password=PASSWORD -f &lt; sakila-data.sql</span><br></pre></td></tr></table></figure>
+
+<p>The script downloads the data population sql script from MySQL site then runs them against the MySQL instance endpoint. </p>
+<p>Normally, the next step is to check if MySQL has the Database and tables by connecting to MySQL server. However, I found that the connection was rejected from the EC2 instance. Furthermore, we can check the TCP connection with <code>telnet</code> for which we have: </p>
+<figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">[ec2-user@ip-172-31-15-160 ~]$ telnet database-1.cgppbdvzhe7r.ap-southeast-2.rds.amazonaws.com 3306</span><br><span class="line">Trying 172.31.42.75...</span><br><span class="line">telnet: connect to address 172.31.42.75: Connection timed out</span><br></pre></td></tr></table></figure>
+
+<p>As per the steps, we can also verify from the Athena side to check which tables are finally getting catalogged (remember: we have a lambda function set up in <a href="/2023/12/19/AWSLambdaETL/" title="AWS Lambda ETL">AWS Lambda ETL</a> which capture newly loaded CSV in landing zone S3 bucket and convert it to parquet and loads it in clean zone S3 bucket by which new files will get catalogged). </p>
+<p>By checking Athena query editor, we can see that data was not found, see the below image:<br><img src="/2023/12/27/DataMigration/preNSGwhitelist.png"></p>
+<h2 id="Solution"><a href="#Solution" class="headerlink" title="Solution"></a>Solution</h2><p>According the behavior discovered, we know the steps of the book section missed an important validation. That is, the network connection has yet confirmed between EC2 and MySQL server instance. </p>
+<p>Since both MySQL instance and EC2 intance are using the same AWS managed VPC, we can set up two security groups to connect the MySQL database and EC2 instance.<br><img src="/2023/12/27/DataMigration/ec2_connection.png"> </p>
+<p>After setting up the connection in VPC for the two services by adding security group rules, we need to run the data population script to load the data to MySQL instance in EC2. </p>
+<h3 id="Validation"><a href="#Validation" class="headerlink" title="Validation"></a>Validation</h3><ul>
+<li><p>Check MySQL server databases</p>
+<figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">  MySQL [(none)]&gt; show databases;</span><br><span class="line">+--------------------+</span><br><span class="line">| Database           |</span><br><span class="line">+--------------------+</span><br><span class="line">| information_schema |</span><br><span class="line">| mysql              |</span><br><span class="line">| performance_schema |</span><br><span class="line">| sakila             | # sakila is loaded as intended</span><br><span class="line">| sys                |</span><br><span class="line">+--------------------+</span><br></pre></td></tr></table></figure>
+</li>
+<li><p>check S3 landing and clean buckets</p>
+<ul>
+<li><p>landing zone (CSV files)<br><img src="/2023/12/27/DataMigration/s3_landing_zone.png"></p>
+</li>
+<li><p>landing zone <code>actor</code> folder (pick one for reference)<br><img src="/2023/12/27/DataMigration/landing_actor_src_csv.png"></p>
+</li>
+<li><p>clean zone (parquet files)<br><img src="/2023/12/27/DataMigration/clean_zone.png"> </p>
+</li>
+<li><p>clean zone <code>actor</code> folder (pick one for reference)</p>
+</li>
+</ul>
+<ul>
+<li>check Athena query editor to valid if all files are catalogged<br><img src="/2023/12/27/DataMigration/data_populated.png"></li>
+</ul>
+</li>
+</ul>
+<p>The file changes capturing in landing zone and conversion in clean zone along with catalogging is set up in the Lambda function in <a href="/2023/12/19/AWSLambdaETL/" title="AWS Lambda ETL">AWS Lambda ETL</a>. </p>
+]]></content>
+      <categories>
+        <category>AWS</category>
+      </categories>
+      <tags>
+        <tag>AWS</tag>
+        <tag>AWS Ingestion</tag>
+        <tag>AWS DMS Migration</tag>
+      </tags>
+  </entry>
+  <entry>
     <title>Managing Fine-grained Permission with AWS Lake Formation</title>
     <url>/2023/12/25/LakeFormationNew/</url>
     <content><![CDATA[<h1 id="Granting-Lake-Formation-Permissions"><a href="#Granting-Lake-Formation-Permissions" class="headerlink" title="Granting Lake Formation Permissions"></a>Granting Lake Formation Permissions</h1><h3 id="Prerequite"><a href="#Prerequite" class="headerlink" title="Prerequite"></a>Prerequite</h3><p>Following the instruction of <a class="link"   href="https://subscription.packtpub.com/book/data/9781804614426/5/ch05lvl1sec33/hands-on-configuring-lake-formation-permissions" >LakeFormation permissions<i class="fas fa-external-link-alt"></i></a>, the intended IAM policies to manage fine-grained access control for data lake has been configured. We now use transition to using Lake Formation to manage fine-grained permission on data lake object. </p>
@@ -130,6 +186,87 @@
       <tags>
         <tag>AWS LakeFormation</tag>
         <tag>Fine-grained Permission</tag>
+      </tags>
+  </entry>
+  <entry>
+    <title>Orchestration Pipeline - Project 1</title>
+    <url>/2023/12/28/OrchestrationPipeline/</url>
+    <content><![CDATA[<h1 id="Motivation"><a href="#Motivation" class="headerlink" title="Motivation"></a>Motivation</h1><p>This project is to make use of cloudformation stack to create codepipeline that will free us from clicking the UI to create&#x2F;define resources for the intent of this project which involves using services: Lambda Functions, SNS Topic, and Step functions.</p>
+<p>The goal is to achieve the following: </p>
+<ul>
+<li><strong>Code Repository</strong>: Use AWS CodeCommit or a compatible version control system to store the application and CloudFormation templates.</li>
+<li><strong>Deployment Automation</strong>:<ul>
+<li>Use AWS CodePipeline to orchestrate the whole CI&#x2F;CD process.</li>
+<li>Set up a source stage pointing to the repository.</li>
+<li>Include a deploy stage to deploy CloudFormation stacks that instantiate the infrastructure.</li>
+</ul>
+</li>
+</ul>
+<blockquote>
+<p>Project Git Repo: <a class="link"   href="https://github.com/KaiLiPlayground/Data_Pipeline_Orchestration" >Data_Pipeline_Orchestration<i class="fas fa-external-link-alt"></i></a></p>
+</blockquote>
+<h2 id="Pipeline-Workflow"><a href="#Pipeline-Workflow" class="headerlink" title="Pipeline Workflow"></a>Pipeline Workflow</h2><p><img src="/2023/12/28/OrchestrationPipeline/cicd_workflow.png">  </p>
+<h2 id="Create-the-Master-Codepipeline-Stack"><a href="#Create-the-Master-Codepipeline-Stack" class="headerlink" title="Create the Master Codepipeline Stack"></a>Create the Master Codepipeline Stack</h2><figure class="highlight powershell"><table><tr><td class="code"><pre><span class="line">aws cloudformation create<span class="literal">-stack</span> `</span><br><span class="line">      <span class="literal">--stack-name</span> OrchetrationStack `</span><br><span class="line">      <span class="literal">--template-body</span> file://&lt;Path to enter&gt;\orchestrationCP.yaml ` </span><br><span class="line">      <span class="literal">--parameters</span> `</span><br><span class="line">          ParameterKey=CodeCommitRepoName,ParameterValue=p1<span class="literal">-orchestration</span> `</span><br><span class="line">          ParameterKey=BucketName,ParameterValue=dataeng<span class="literal">-clean-zone-etl</span> `</span><br><span class="line">      <span class="literal">--capabilities</span> CAPABILITY_IAM CAPABILITY_NAMED_IAM</span><br></pre></td></tr></table></figure>
+
+
+
+<h2 id="What-does-the-original-project-do"><a href="#What-does-the-original-project-do" class="headerlink" title="What does the original project do?"></a>What does the original project do?</h2><p>This project demonstrates how to orchestrate a data pipeline using AWS Step Function, integrating AWS Lambda functions and Amazon SNS for process management and error notifications. The key steps and the purpose of the project are summarized as follows:</p>
+<ul>
+<li><p><strong>Orchestration with AWS Step Function</strong>:</p>
+<ul>
+<li>Introduces AWS Step Function for orchestrating data pipelines, suitable for both simple and complex workflows.</li>
+<li>Utilizes Lambda functions to process data; however, in larger production pipelines, these could be replaced with AWS Glue jobs.</li>
+</ul>
+</li>
+<li><p><strong>Lambda Function for File Type Checking</strong>:</p>
+<ul>
+<li>Sets up a Lambda function (<code>dataeng-check-file-ext</code>) to determine the file type of items uploaded to an S3 bucket.</li>
+<li>The function analyzes the file extension and passes this information to the Step Function state machine.</li>
+</ul>
+</li>
+<li><p><strong>Lambda Function for Simulating Failures</strong>:</p>
+<ul>
+<li>Another Lambda function (<code>dataeng-random-failure-generator</code>) randomly generates failures to simulate real-world scenarios in data processing.</li>
+</ul>
+</li>
+<li><p><strong>SNS Topic for Failure Notifications</strong>:</p>
+<ul>
+<li>Establishes an Amazon SNS topic (<code>dataeng-failure-notification</code>) to send email notifications in case of processing failures.</li>
+</ul>
+</li>
+<li><p><strong>Step Function State Machine Configuration</strong>:</p>
+<ul>
+<li>Designs a state machine that starts with checking the file extension and then moves to a CHOICE state.</li>
+<li>Processes supported file types (.csv) and uses SNS notifications for unsupported types or processing errors.</li>
+</ul>
+</li>
+<li><p><strong>Event-Driven Workflow Setup</strong>:</p>
+<ul>
+<li>Configures AWS CloudTrail and Amazon EventBridge to trigger the state machine upon new file uploads to an S3 bucket.</li>
+</ul>
+</li>
+<li><p><strong>Testing the Pipeline</strong>:</p>
+<ul>
+<li>Involves uploading files to the S3 bucket and observing the state machine’s response, including handling both successful and failed executions.</li>
+</ul>
+</li>
+</ul>
+<p>Purpose of the project:</p>
+<ul>
+<li>The project aims to provide hands-on experience in building and managing an event-driven, serverless data pipeline on AWS.</li>
+<li>It illustrates the integration of various AWS services, error handling, and the importance of observability in pipeline orchestration.</li>
+<li>The exercise serves as a practical example of how AWS Step Function can streamline data pipeline workflows and handle complexities in real-world data engineering scenarios.</li>
+</ul>
+<blockquote>
+<p>For more info, <a class="link"   href="https://subscription.packtpub.com/book/data/9781800560413/8/ch08lvl1sec52/hands-on-ingesting-streaming-data?_gl=1*17mtlck*_gcl_au*MTI5MjU4OTg2MC4xNzAzNDg0Mzg5*_ga*MjExODIxOTUyMS4xNzAzNDg0Mzg5*_ga_Q4R8G7SJDK*MTcwMzgyMDk4NC40LjAuMTcwMzgyMDk4NC42MC4wLjA." >hands-on Orchestration with step functions<i class="fas fa-external-link-alt"></i></a></p>
+</blockquote>
+]]></content>
+      <categories>
+        <category>AWS</category>
+      </categories>
+      <tags>
+        <tag>AWS CodePipeline</tag>
+        <tag>AWS Step Function Orchestration</tag>
       </tags>
   </entry>
   <entry>
@@ -207,143 +344,6 @@
       <tags>
         <tag>AWS Kinesis Firehose</tag>
         <tag>AWS Streaming Ingestion</tag>
-      </tags>
-  </entry>
-  <entry>
-    <title>Orchestration Pipeline - Project 1</title>
-    <url>/2023/12/28/OrchestrationPipeline/</url>
-    <content><![CDATA[<h1 id="Motivation"><a href="#Motivation" class="headerlink" title="Motivation"></a>Motivation</h1><p>This project is to make use of cloudformation stack to create codepipeline that will free us from clicking the UI to create&#x2F;define resources for the intent of this project which involves using services: Lambda Functions, SNS Topic, and Step functions.</p>
-<p>The goal is to achieve the following: </p>
-<ul>
-<li><strong>Code Repository</strong>: Use AWS CodeCommit or a compatible version control system to store the application and CloudFormation templates.</li>
-<li><strong>Deployment Automation</strong>:<ul>
-<li>Use AWS CodePipeline to orchestrate the whole CI&#x2F;CD process.</li>
-<li>Set up a source stage pointing to the repository.</li>
-<li>Include a deploy stage to deploy CloudFormation stacks that instantiate the infrastructure.</li>
-</ul>
-</li>
-</ul>
-<blockquote>
-<p>Project Gitrepo: <a class="link"   href="https://github.com/KaiLiPlayground/Data_Pipeline_Orchestration" >Data_Pipeline_Orchestration<i class="fas fa-external-link-alt"></i></a></p>
-</blockquote>
-<h2 id="Pipeline-Workflow"><a href="#Pipeline-Workflow" class="headerlink" title="Pipeline Workflow"></a>Pipeline Workflow</h2><p><img src="/2023/12/28/OrchestrationPipeline/cicd_workflow.png">  </p>
-<h2 id="Create-the-Master-Codepipeline-Stack-PowerShell"><a href="#Create-the-Master-Codepipeline-Stack-PowerShell" class="headerlink" title="Create the Master Codepipeline Stack (PowerShell)"></a>Create the Master Codepipeline Stack (PowerShell)</h2><figure class="highlight powershell"><table><tr><td class="code"><pre><span class="line">aws cloudformation create<span class="literal">-stack</span> `</span><br><span class="line">      <span class="literal">--stack-name</span> OrchetrationStack `</span><br><span class="line">      <span class="literal">--template-body</span> file://&lt;Path to enter&gt;\orchestrationCP.yaml ` </span><br><span class="line">      <span class="literal">--parameters</span> `</span><br><span class="line">          ParameterKey=CodeCommitRepoName,ParameterValue=p1<span class="literal">-orchestration</span> `</span><br><span class="line">          ParameterKey=BucketName,ParameterValue=dataeng<span class="literal">-clean-zone-etl</span> `</span><br><span class="line">      <span class="literal">--capabilities</span> CAPABILITY_IAM CAPABILITY_NAMED_IAM</span><br></pre></td></tr></table></figure>
-
-
-
-<h2 id="What-does-the-original-project-do"><a href="#What-does-the-original-project-do" class="headerlink" title="What does the original project do?"></a>What does the original project do?</h2><p>This project demonstrates how to orchestrate a data pipeline using AWS Step Function, integrating AWS Lambda functions and Amazon SNS for process management and error notifications. The key steps and the purpose of the project are summarized as follows:</p>
-<ul>
-<li><p><strong>Orchestration with AWS Step Function</strong>:</p>
-<ul>
-<li>Introduces AWS Step Function for orchestrating data pipelines, suitable for both simple and complex workflows.</li>
-<li>Utilizes Lambda functions to process data; however, in larger production pipelines, these could be replaced with AWS Glue jobs.</li>
-</ul>
-</li>
-<li><p><strong>Lambda Function for File Type Checking</strong>:</p>
-<ul>
-<li>Sets up a Lambda function (<code>dataeng-check-file-ext</code>) to determine the file type of items uploaded to an S3 bucket.</li>
-<li>The function analyzes the file extension and passes this information to the Step Function state machine.</li>
-</ul>
-</li>
-<li><p><strong>Lambda Function for Simulating Failures</strong>:</p>
-<ul>
-<li>Another Lambda function (<code>dataeng-random-failure-generator</code>) randomly generates failures to simulate real-world scenarios in data processing.</li>
-</ul>
-</li>
-<li><p><strong>SNS Topic for Failure Notifications</strong>:</p>
-<ul>
-<li>Establishes an Amazon SNS topic (<code>dataeng-failure-notification</code>) to send email notifications in case of processing failures.</li>
-</ul>
-</li>
-<li><p><strong>Step Function State Machine Configuration</strong>:</p>
-<ul>
-<li>Designs a state machine that starts with checking the file extension and then moves to a CHOICE state.</li>
-<li>Processes supported file types (.csv) and uses SNS notifications for unsupported types or processing errors.</li>
-</ul>
-</li>
-<li><p><strong>Event-Driven Workflow Setup</strong>:</p>
-<ul>
-<li>Configures AWS CloudTrail and Amazon EventBridge to trigger the state machine upon new file uploads to an S3 bucket.</li>
-</ul>
-</li>
-<li><p><strong>Testing the Pipeline</strong>:</p>
-<ul>
-<li>Involves uploading files to the S3 bucket and observing the state machine’s response, including handling both successful and failed executions.</li>
-</ul>
-</li>
-</ul>
-<p>Purpose of the project:</p>
-<ul>
-<li>The project aims to provide hands-on experience in building and managing an event-driven, serverless data pipeline on AWS.</li>
-<li>It illustrates the integration of various AWS services, error handling, and the importance of observability in pipeline orchestration.</li>
-<li>The exercise serves as a practical example of how AWS Step Function can streamline data pipeline workflows and handle complexities in real-world data engineering scenarios.</li>
-</ul>
-<blockquote>
-<p>For more info, <a class="link"   href="https://subscription.packtpub.com/book/data/9781800560413/8/ch08lvl1sec52/hands-on-ingesting-streaming-data?_gl=1*17mtlck*_gcl_au*MTI5MjU4OTg2MC4xNzAzNDg0Mzg5*_ga*MjExODIxOTUyMS4xNzAzNDg0Mzg5*_ga_Q4R8G7SJDK*MTcwMzgyMDk4NC40LjAuMTcwMzgyMDk4NC42MC4wLjA." >hands-on Orchestration with step functions<i class="fas fa-external-link-alt"></i></a></p>
-</blockquote>
-]]></content>
-      <categories>
-        <category>AWS</category>
-      </categories>
-      <tags>
-        <tag>AWS CodePipeline</tag>
-        <tag>AWS Step Function Orchestration</tag>
-      </tags>
-  </entry>
-  <entry>
-    <title>Data Migration</title>
-    <url>/2023/12/27/DataMigration/</url>
-    <content><![CDATA[<h1 id="Ingesting-Data-with-AWS-DMS"><a href="#Ingesting-Data-with-AWS-DMS" class="headerlink" title="Ingesting Data with AWS DMS"></a>Ingesting Data with AWS DMS</h1><p>Following <a class="link"   href="https://subscription.packtpub.com/book/data/9781804614426/8/ch08lvl1sec51/hands-on-ingesting-data-with-aws-dms?_gl=1*1eoz65u*_gcl_au*MTI5MjU4OTg2MC4xNzAzNDg0Mzg5*_ga*MjExODIxOTUyMS4xNzAzNDg0Mzg5*_ga_Q4R8G7SJDK*MTcwMzY1NDkwNC4yLjEuMTcwMzY1NDkyOC4zNi4wLjA." >Ingesting Data with AWS DMS<i class="fas fa-external-link-alt"></i></a>, we learned how to set up the data ingestion with DMS by creating a MySQL SQL instance, EC2 instance for data population, the required access policy and role creation, and Database migration tasks. </p>
-<p>Here is a flowchart for the setup:<br><img src="/2023/12/27/DataMigration/AWSServiceSetupFlowchart.png"></p>
-<ol>
-<li>Create a MySQL instance </li>
-<li>Create an EC2 instance </li>
-<li>Create an IAM policy and role for DMS</li>
-<li>DMS setup for a full load from MySQL to S3</li>
-<li>Query data with Athena</li>
-</ol>
-<p>However, the setup is not a smooth ride as the book I used published in 2021 and it has missed some pivotal steps. Here, I will point out the pivot step and the troubleshooting steps that I used to resolve the issue. </p>
-<h2 id="Issue"><a href="#Issue" class="headerlink" title="Issue"></a>Issue</h2><p>The main issue lies in <strong>step 1</strong> and <strong>step 2</strong> that the data population scripts were not taking effect when it tried to load data into the MySQL server. </p>
-<h3 id="Issue-Behavior"><a href="#Issue-Behavior" class="headerlink" title="Issue Behavior"></a>Issue Behavior</h3><h4 id="Data-Population-Script"><a href="#Data-Population-Script" class="headerlink" title="Data Population Script"></a>Data Population Script</h4><figure class="highlight shell"><table><tr><td class="code"><pre><span class="line"><span class="meta prompt_">#</span><span class="language-bash">!/bin/bash</span></span><br><span class="line">yum install -y mariadb</span><br><span class="line">curl https://downloads.mysql.com/docs/sakila-db.zip -o sakila.zip</span><br><span class="line">unzip sakila.zip</span><br><span class="line">cd sakila-db</span><br><span class="line">mysql --host=HOST --user=admin --password=PASSWORD -f &lt; sakila-schema.sql</span><br><span class="line">mysql --host=HOST --user=admin --password=PASSWORD -f &lt; sakila-data.sql</span><br></pre></td></tr></table></figure>
-
-<p>The script downloads the data population sql script from MySQL site then runs them against the MySQL instance endpoint. </p>
-<p>Normally, the next step is to check if MySQL has the Database and tables by connecting to MySQL server. However, I found that the connection was rejected from the EC2 instance. Furthermore, we can check the TCP connection with <code>telnet</code> for which we have: </p>
-<figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">[ec2-user@ip-172-31-15-160 ~]$ telnet database-1.cgppbdvzhe7r.ap-southeast-2.rds.amazonaws.com 3306</span><br><span class="line">Trying 172.31.42.75...</span><br><span class="line">telnet: connect to address 172.31.42.75: Connection timed out</span><br></pre></td></tr></table></figure>
-
-<p>As per the steps, we can also verify from the Athena side to check which tables are finally getting catalogged (remember: we have a lambda function set up in <a href="/2023/12/19/AWSLambdaETL/" title="AWS Lambda ETL">AWS Lambda ETL</a> which capture newly loaded CSV in landing zone S3 bucket and convert it to parquet and loads it in clean zone S3 bucket by which new files will get catalogged). </p>
-<p>By checking Athena query editor, we can see that data was not found, see the below image:<br><img src="/2023/12/27/DataMigration/preNSGwhitelist.png"></p>
-<h2 id="Solution"><a href="#Solution" class="headerlink" title="Solution"></a>Solution</h2><p>According the behavior discovered, we know the steps of the book section missed an important validation. That is, the network connection has yet confirmed between EC2 and MySQL server instance. </p>
-<p>Since both MySQL instance and EC2 intance are using the same AWS managed VPC, we can set up two security groups to connect the MySQL database and EC2 instance.<br><img src="/2023/12/27/DataMigration/ec2_connection.png"> </p>
-<p>After setting up the connection in VPC for the two services by adding security group rules, we need to run the data population script to load the data to MySQL instance in EC2. </p>
-<h3 id="Validation"><a href="#Validation" class="headerlink" title="Validation"></a>Validation</h3><ul>
-<li><p>Check MySQL server databases</p>
-<figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">  MySQL [(none)]&gt; show databases;</span><br><span class="line">+--------------------+</span><br><span class="line">| Database           |</span><br><span class="line">+--------------------+</span><br><span class="line">| information_schema |</span><br><span class="line">| mysql              |</span><br><span class="line">| performance_schema |</span><br><span class="line">| sakila             | # sakila is loaded as intended</span><br><span class="line">| sys                |</span><br><span class="line">+--------------------+</span><br></pre></td></tr></table></figure>
-</li>
-<li><p>check S3 landing and clean buckets</p>
-<ul>
-<li><p>landing zone (CSV files)<br><img src="/2023/12/27/DataMigration/s3_landing_zone.png"></p>
-</li>
-<li><p>landing zone <code>actor</code> folder (pick one for reference)<br><img src="/2023/12/27/DataMigration/landing_actor_src_csv.png"></p>
-</li>
-<li><p>clean zone (parquet files)<br><img src="/2023/12/27/DataMigration/clean_zone.png"> </p>
-</li>
-<li><p>clean zone <code>actor</code> folder (pick one for reference)</p>
-</li>
-</ul>
-<ul>
-<li>check Athena query editor to valid if all files are catalogged<br><img src="/2023/12/27/DataMigration/data_populated.png"></li>
-</ul>
-</li>
-</ul>
-<p>The file changes capturing in landing zone and conversion in clean zone along with catalogging is set up in the Lambda function in <a href="/2023/12/19/AWSLambdaETL/" title="AWS Lambda ETL">AWS Lambda ETL</a>. </p>
-]]></content>
-      <categories>
-        <category>AWS</category>
-      </categories>
-      <tags>
-        <tag>AWS</tag>
-        <tag>AWS Ingestion</tag>
-        <tag>AWS DMS Migration</tag>
       </tags>
   </entry>
 </search>
