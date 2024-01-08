@@ -1,20 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <search>
   <entry>
-    <title>Databricks Certification</title>
-    <url>/2023/12/28/DatabricksCertification/</url>
-    <content><![CDATA[<h1 id="Introduction-to-Databricks-Certified-Associate-Developer-for-Apache-Spark-3-0"><a href="#Introduction-to-Databricks-Certified-Associate-Developer-for-Apache-Spark-3-0" class="headerlink" title="Introduction to Databricks Certified Associate Developer for Apache Spark 3.0"></a>Introduction to Databricks Certified Associate Developer for Apache Spark 3.0</h1><p>The <strong>Databricks Certified Associate Developer for Apache Spark 3.0</strong> is a prestigious certification designed for professionals seeking to demonstrate their expertise in Apache Spark, particularly within the Databricks platform. This certification is a benchmark for developers who specialize in Spark, emphasizing their ability to efficiently process and analyze large-scale data. It not only validates an individual’s technical skills in Spark application development, Spark SQL, data frames, and performance optimization but also highlights their proficiency in leveraging Databricks for enhanced data processing. As Spark continues to be a leading platform in big data analytics, this certification offers Spark engineers a competitive edge in the job market, ensuring their skills are recognized and valued in this rapidly evolving field.</p>
-<h1 id="Proof-of-work"><a href="#Proof-of-work" class="headerlink" title="Proof of work"></a>Proof of work</h1><p>Here is my certificate in screenshot: </p>
-<p><img src="/2023/12/28/DatabricksCertification/databricksSparkCertification.png"></p>
-]]></content>
-      <categories>
-        <category>Databricks Spark Certification</category>
-      </categories>
-      <tags>
-        <tag>Databricks Certification</tag>
-      </tags>
-  </entry>
-  <entry>
     <title>Data Migration</title>
     <url>/2023/12/27/DataMigration/</url>
     <content><![CDATA[<h1 id="Ingesting-Data-with-AWS-DMS"><a href="#Ingesting-Data-with-AWS-DMS" class="headerlink" title="Ingesting Data with AWS DMS"></a>Ingesting Data with AWS DMS</h1><p>Following <a class="link"   href="https://subscription.packtpub.com/book/data/9781804614426/8/ch08lvl1sec51/hands-on-ingesting-data-with-aws-dms?_gl=1*1eoz65u*_gcl_au*MTI5MjU4OTg2MC4xNzAzNDg0Mzg5*_ga*MjExODIxOTUyMS4xNzAzNDg0Mzg5*_ga_Q4R8G7SJDK*MTcwMzY1NDkwNC4yLjEuMTcwMzY1NDkyOC4zNi4wLjA." >Ingesting Data with AWS DMS<i class="fas fa-external-link-alt"></i></a>, we learned how to set up the data ingestion with DMS by creating a MySQL SQL instance, EC2 instance for data population, the required access policy and role creation, and Database migration tasks. </p>
@@ -71,25 +57,17 @@
       </tags>
   </entry>
   <entry>
-    <title>Managing Fine-grained Permission with AWS Lake Formation</title>
-    <url>/2023/12/25/LakeFormationNew/</url>
-    <content><![CDATA[<h1 id="Granting-Lake-Formation-Permissions"><a href="#Granting-Lake-Formation-Permissions" class="headerlink" title="Granting Lake Formation Permissions"></a>Granting Lake Formation Permissions</h1><h3 id="Prerequite"><a href="#Prerequite" class="headerlink" title="Prerequite"></a>Prerequite</h3><p>Following the instruction of <a class="link"   href="https://subscription.packtpub.com/book/data/9781804614426/5/ch05lvl1sec33/hands-on-configuring-lake-formation-permissions" >LakeFormation permissions<i class="fas fa-external-link-alt"></i></a>, the intended IAM policies to manage fine-grained access control for data lake has been configured. We now use transition to using Lake Formation to manage fine-grained permission on data lake object. </p>
-<h2 id="Motivation-and-Issue"><a href="#Motivation-and-Issue" class="headerlink" title="Motivation and Issue"></a>Motivation and Issue</h2><p>Our goal is to experiment with the granular permission data acess on the column level access of a table in Lake Formation. </p>
-<p>At the time of writing this post, the data filter row access UI button is not working, see the below image for reference: </p>
-<p><img src="/2023/12/25/LakeFormationNew/dataFilter.png" alt="datafilter"></p>
-<h2 id="Solution"><a href="#Solution" class="headerlink" title="Solution"></a>Solution</h2><p>We can use AWS CLI as a workaround to UI button issue to allow principal user accessing one specifc column only while blocking the others and allow access to all rows. Here the sample AWS CLI command: </p>
-<figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">aws lakeformation grant-permissions \</span><br><span class="line">--principal DataLakePrincipalIdentifier=arn:aws:iam::&lt;account-id&gt;:user/database-user&quot; \</span><br><span class="line">--resource &#x27;&#123;&quot;TableWithColumns&quot;:&#123;&quot;DatabaseName&quot;:&quot;testdb&quot;,&quot;Name&quot;:&quot;csvparquet&quot;,&quot;ColumnNames&quot;:[&quot;name&quot;]&#125;&#125;&#x27; \</span><br><span class="line">--permissions &quot;SELECT&quot; \</span><br><span class="line">--permissions-with-grant-option &quot;SELECT&quot; \</span><br><span class="line">--profile &quot;&lt;Profile Name&gt;&quot;</span><br></pre></td></tr></table></figure>
-
-<p>In this command, we are allowing the specified principal user to have access to column <code>name</code> but restricting others. The <code>csvparquet</code> table has columns, <code>name</code> and <code>favorite_num</code>. The expected output for querying against the table using the specified principal user is that only column <code>name</code> is showing, see the below image for reference: </p>
-<p><img src="/2023/12/25/LakeFormationNew/athenaquery.png"></p>
-<hr>
+    <title>Databricks Certification</title>
+    <url>/2023/12/28/DatabricksCertification/</url>
+    <content><![CDATA[<h1 id="Introduction-to-Databricks-Certified-Associate-Developer-for-Apache-Spark-3-0"><a href="#Introduction-to-Databricks-Certified-Associate-Developer-for-Apache-Spark-3-0" class="headerlink" title="Introduction to Databricks Certified Associate Developer for Apache Spark 3.0"></a>Introduction to Databricks Certified Associate Developer for Apache Spark 3.0</h1><p>The <strong>Databricks Certified Associate Developer for Apache Spark 3.0</strong> is a prestigious certification designed for professionals seeking to demonstrate their expertise in Apache Spark, particularly within the Databricks platform. This certification is a benchmark for developers who specialize in Spark, emphasizing their ability to efficiently process and analyze large-scale data. It not only validates an individual’s technical skills in Spark application development, Spark SQL, data frames, and performance optimization but also highlights their proficiency in leveraging Databricks for enhanced data processing. As Spark continues to be a leading platform in big data analytics, this certification offers Spark engineers a competitive edge in the job market, ensuring their skills are recognized and valued in this rapidly evolving field.</p>
+<h1 id="Proof-of-work"><a href="#Proof-of-work" class="headerlink" title="Proof of work"></a>Proof of work</h1><p>Here is my certificate in screenshot: </p>
+<p><img src="/2023/12/28/DatabricksCertification/databricksSparkCertification.png"></p>
 ]]></content>
       <categories>
-        <category>AWS</category>
+        <category>Databricks Spark Certification</category>
       </categories>
       <tags>
-        <tag>AWS LakeFormation</tag>
-        <tag>Fine-grained Permission</tag>
+        <tag>Databricks Certification</tag>
       </tags>
   </entry>
   <entry>
@@ -189,6 +167,109 @@
       </tags>
   </entry>
   <entry>
+    <title>Managing Fine-grained Permission with AWS Lake Formation</title>
+    <url>/2023/12/25/LakeFormationNew/</url>
+    <content><![CDATA[<h1 id="Granting-Lake-Formation-Permissions"><a href="#Granting-Lake-Formation-Permissions" class="headerlink" title="Granting Lake Formation Permissions"></a>Granting Lake Formation Permissions</h1><h3 id="Prerequite"><a href="#Prerequite" class="headerlink" title="Prerequite"></a>Prerequite</h3><p>Following the instruction of <a class="link"   href="https://subscription.packtpub.com/book/data/9781804614426/5/ch05lvl1sec33/hands-on-configuring-lake-formation-permissions" >LakeFormation permissions<i class="fas fa-external-link-alt"></i></a>, the intended IAM policies to manage fine-grained access control for data lake has been configured. We now use transition to using Lake Formation to manage fine-grained permission on data lake object. </p>
+<h2 id="Motivation-and-Issue"><a href="#Motivation-and-Issue" class="headerlink" title="Motivation and Issue"></a>Motivation and Issue</h2><p>Our goal is to experiment with the granular permission data acess on the column level access of a table in Lake Formation. </p>
+<p>At the time of writing this post, the data filter row access UI button is not working, see the below image for reference: </p>
+<p><img src="/2023/12/25/LakeFormationNew/dataFilter.png" alt="datafilter"></p>
+<h2 id="Solution"><a href="#Solution" class="headerlink" title="Solution"></a>Solution</h2><p>We can use AWS CLI as a workaround to UI button issue to allow principal user accessing one specifc column only while blocking the others and allow access to all rows. Here the sample AWS CLI command: </p>
+<figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">aws lakeformation grant-permissions \</span><br><span class="line">--principal DataLakePrincipalIdentifier=arn:aws:iam::&lt;account-id&gt;:user/database-user&quot; \</span><br><span class="line">--resource &#x27;&#123;&quot;TableWithColumns&quot;:&#123;&quot;DatabaseName&quot;:&quot;testdb&quot;,&quot;Name&quot;:&quot;csvparquet&quot;,&quot;ColumnNames&quot;:[&quot;name&quot;]&#125;&#125;&#x27; \</span><br><span class="line">--permissions &quot;SELECT&quot; \</span><br><span class="line">--permissions-with-grant-option &quot;SELECT&quot; \</span><br><span class="line">--profile &quot;&lt;Profile Name&gt;&quot;</span><br></pre></td></tr></table></figure>
+
+<p>In this command, we are allowing the specified principal user to have access to column <code>name</code> but restricting others. The <code>csvparquet</code> table has columns, <code>name</code> and <code>favorite_num</code>. The expected output for querying against the table using the specified principal user is that only column <code>name</code> is showing, see the below image for reference: </p>
+<p><img src="/2023/12/25/LakeFormationNew/athenaquery.png"></p>
+<hr>
+]]></content>
+      <categories>
+        <category>AWS</category>
+      </categories>
+      <tags>
+        <tag>AWS LakeFormation</tag>
+        <tag>Fine-grained Permission</tag>
+      </tags>
+  </entry>
+  <entry>
+    <title>Orchestration Pipeline - Project 1</title>
+    <url>/2023/12/28/OrchestrationPipeline/</url>
+    <content><![CDATA[<h1 id="Motivation"><a href="#Motivation" class="headerlink" title="Motivation"></a>Motivation</h1><p>This project is to make use of cloudformation stack to create codepipeline that will free us from clicking the UI to create&#x2F;define resources for the intent of this project which involves using services: Lambda Functions, SNS Topic, and Step functions.</p>
+<p>The goal is to achieve the following: </p>
+<ul>
+<li><strong>Code Repository</strong>: Use AWS CodeCommit or a compatible version control system to store the application and CloudFormation templates.</li>
+<li><strong>Deployment Automation</strong>:<ul>
+<li>Use AWS CodePipeline to orchestrate the whole CI&#x2F;CD process.</li>
+<li>Set up a source stage pointing to the repository.</li>
+<li>Include a deploy stage to deploy CloudFormation stacks that instantiate the infrastructure.</li>
+</ul>
+</li>
+</ul>
+<blockquote>
+<p>Project Gitrepo: <a class="link"   href="https://github.com/KaiLiPlayground/Data_Pipeline_Orchestration" >Data_Pipeline_Orchestration<i class="fas fa-external-link-alt"></i></a></p>
+</blockquote>
+<h2 id="Pipeline-Workflow"><a href="#Pipeline-Workflow" class="headerlink" title="Pipeline Workflow"></a>Pipeline Workflow</h2><p><img src="/2023/12/28/OrchestrationPipeline/cicd_workflow.png">  </p>
+<h2 id=""><a href="#" class="headerlink" title=""></a></h2><h2 id="Create-the-Master-Codepipeline-Stack-PowerShell"><a href="#Create-the-Master-Codepipeline-Stack-PowerShell" class="headerlink" title="Create the Master Codepipeline Stack (PowerShell)"></a>Create the Master Codepipeline Stack (PowerShell)</h2><figure class="highlight powershell"><table><tr><td class="code"><pre><span class="line">aws cloudformation create<span class="literal">-stack</span> `</span><br><span class="line">      <span class="literal">--stack-name</span> OrchetrationStack `</span><br><span class="line">      <span class="literal">--template-body</span> file://&lt;Path to enter&gt;\orchestrationCP.yaml ` </span><br><span class="line">      <span class="literal">--parameters</span> `</span><br><span class="line">          ParameterKey=CodeCommitRepoName,ParameterValue=p1<span class="literal">-orchestration</span> `</span><br><span class="line">          ParameterKey=BucketName,ParameterValue=dataeng<span class="literal">-clean-zone-etl</span> `</span><br><span class="line">      <span class="literal">--capabilities</span> CAPABILITY_IAM CAPABILITY_NAMED_IAM</span><br></pre></td></tr></table></figure>
+
+
+
+<h2 id="What-does-the-original-project-do"><a href="#What-does-the-original-project-do" class="headerlink" title="What does the original project do?"></a>What does the original project do?</h2><p>This project demonstrates how to orchestrate a data pipeline using AWS Step Function, integrating AWS Lambda functions and Amazon SNS for process management and error notifications. The key steps and the purpose of the project are summarized as follows:</p>
+<ul>
+<li><p><strong>Orchestration with AWS Step Function</strong>:</p>
+<ul>
+<li>Introduces AWS Step Function for orchestrating data pipelines, suitable for both simple and complex workflows.</li>
+<li>Utilizes Lambda functions to process data; however, in larger production pipelines, these could be replaced with AWS Glue jobs.</li>
+</ul>
+</li>
+<li><p><strong>Lambda Function for File Type Checking</strong>:</p>
+<ul>
+<li>Sets up a Lambda function (<code>dataeng-check-file-ext</code>) to determine the file type of items uploaded to an S3 bucket.</li>
+<li>The function analyzes the file extension and passes this information to the Step Function state machine.</li>
+</ul>
+</li>
+<li><p><strong>Lambda Function for Simulating Failures</strong>:</p>
+<ul>
+<li>Another Lambda function (<code>dataeng-random-failure-generator</code>) randomly generates failures to simulate real-world scenarios in data processing.</li>
+</ul>
+</li>
+<li><p><strong>SNS Topic for Failure Notifications</strong>:</p>
+<ul>
+<li>Establishes an Amazon SNS topic (<code>dataeng-failure-notification</code>) to send email notifications in case of processing failures.</li>
+</ul>
+</li>
+<li><p><strong>Step Function State Machine Configuration</strong>:</p>
+<ul>
+<li>Designs a state machine that starts with checking the file extension and then moves to a CHOICE state.</li>
+<li>Processes supported file types (.csv) and uses SNS notifications for unsupported types or processing errors.</li>
+</ul>
+</li>
+<li><p><strong>Event-Driven Workflow Setup</strong>:</p>
+<ul>
+<li>Configures AWS CloudTrail and Amazon EventBridge to trigger the state machine upon new file uploads to an S3 bucket.</li>
+</ul>
+</li>
+<li><p><strong>Testing the Pipeline</strong>:</p>
+<ul>
+<li>Involves uploading files to the S3 bucket and observing the state machine’s response, including handling both successful and failed executions.</li>
+</ul>
+</li>
+</ul>
+<p>Purpose of the project:</p>
+<ul>
+<li>The project aims to provide hands-on experience in building and managing an event-driven, serverless data pipeline on AWS.</li>
+<li>It illustrates the integration of various AWS services, error handling, and the importance of observability in pipeline orchestration.</li>
+<li>The exercise serves as a practical example of how AWS Step Function can streamline data pipeline workflows and handle complexities in real-world data engineering scenarios.</li>
+</ul>
+<blockquote>
+<p>For more info, <a class="link"   href="https://subscription.packtpub.com/book/data/9781800560413/8/ch08lvl1sec52/hands-on-ingesting-streaming-data?_gl=1*17mtlck*_gcl_au*MTI5MjU4OTg2MC4xNzAzNDg0Mzg5*_ga*MjExODIxOTUyMS4xNzAzNDg0Mzg5*_ga_Q4R8G7SJDK*MTcwMzgyMDk4NC40LjAuMTcwMzgyMDk4NC42MC4wLjA." >hands-on Orchestration with step functions<i class="fas fa-external-link-alt"></i></a></p>
+</blockquote>
+]]></content>
+      <categories>
+        <category>AWS</category>
+      </categories>
+      <tags>
+        <tag>AWS CodePipeline</tag>
+        <tag>AWS Step Function Orchestration</tag>
+      </tags>
+  </entry>
+  <entry>
     <title>Stream Ingestion</title>
     <url>/2023/12/27/StreamIngestion/</url>
     <content><![CDATA[<h1 id="Streamlining-Data-Processing-with-AWS-Lambda-and-AWS-Data-Wrangler"><a href="#Streamlining-Data-Processing-with-AWS-Lambda-and-AWS-Data-Wrangler" class="headerlink" title="Streamlining Data Processing with AWS Lambda and AWS Data Wrangler"></a>Streamlining Data Processing with AWS Lambda and AWS Data Wrangler</h1><p>When working with <a class="link"   href="https://subscription.packtpub.com/book/data/9781800560413/8/ch08lvl1sec52/hands-on-ingesting-streaming-data?_gl=1*17mtlck*_gcl_au*MTI5MjU4OTg2MC4xNzAzNDg0Mzg5*_ga*MjExODIxOTUyMS4xNzAzNDg0Mzg5*_ga_Q4R8G7SJDK*MTcwMzgyMDk4NC40LjAuMTcwMzgyMDk4NC42MC4wLjA." >Data Engineering with AWS - Ingesting Streaming Data<i class="fas fa-external-link-alt"></i></a>, I encountered a challenge with setting up an AWS Glue Crawler using a specific role. This led me to devise an alternative method for processing and cataloging data in S3, utilizing AWS Lambda and AWS Data Wrangler.</p>
@@ -263,83 +344,6 @@
       <tags>
         <tag>AWS Kinesis Firehose</tag>
         <tag>AWS Streaming Ingestion</tag>
-      </tags>
-  </entry>
-  <entry>
-    <title>Orchestration Pipeline - Project 1</title>
-    <url>/2023/12/28/OrchestrationPipeline/</url>
-    <content><![CDATA[<h1 id="Motivation"><a href="#Motivation" class="headerlink" title="Motivation"></a>Motivation</h1><p>This project is to make use of cloudformation stack to create codepipeline that will free us from clicking the UI to create&#x2F;define resources for the intent of this project which involves using services: Lambda Functions, SNS Topic, and Step functions.</p>
-<p>The goal is to achieve the following: </p>
-<ul>
-<li><strong>Code Repository</strong>: Use AWS CodeCommit or a compatible version control system to store the application and CloudFormation templates.</li>
-<li><strong>Deployment Automation</strong>:<ul>
-<li>Use AWS CodePipeline to orchestrate the whole CI&#x2F;CD process.</li>
-<li>Set up a source stage pointing to the repository.</li>
-<li>Include a deploy stage to deploy CloudFormation stacks that instantiate the infrastructure.</li>
-</ul>
-</li>
-</ul>
-<blockquote>
-<p>Project Gitrepo: <a class="link"   href="https://github.com/KaiLiPlayground/Data_Pipeline_Orchestration" >Data_Pipeline_Orchestration<i class="fas fa-external-link-alt"></i></a></p>
-</blockquote>
-<h2 id="Pipeline-Workflow"><a href="#Pipeline-Workflow" class="headerlink" title="Pipeline Workflow"></a>Pipeline Workflow</h2><p><img src="/2023/12/28/OrchestrationPipeline/cicd_workflow.png">  </p>
-<h2 id="What-does-the-original-project-do"><a href="#What-does-the-original-project-do" class="headerlink" title="What does the original project do?"></a>What does the original project do?</h2><p>This project demonstrates how to orchestrate a data pipeline using AWS Step Function, integrating AWS Lambda functions and Amazon SNS for process management and error notifications. The key steps and the purpose of the project are summarized as follows:</p>
-<ul>
-<li><p><strong>Orchestration with AWS Step Function</strong>:</p>
-<ul>
-<li>Introduces AWS Step Function for orchestrating data pipelines, suitable for both simple and complex workflows.</li>
-<li>Utilizes Lambda functions to process data; however, in larger production pipelines, these could be replaced with AWS Glue jobs.</li>
-</ul>
-</li>
-<li><p><strong>Lambda Function for File Type Checking</strong>:</p>
-<ul>
-<li>Sets up a Lambda function (<code>dataeng-check-file-ext</code>) to determine the file type of items uploaded to an S3 bucket.</li>
-<li>The function analyzes the file extension and passes this information to the Step Function state machine.</li>
-</ul>
-</li>
-<li><p><strong>Lambda Function for Simulating Failures</strong>:</p>
-<ul>
-<li>Another Lambda function (<code>dataeng-random-failure-generator</code>) randomly generates failures to simulate real-world scenarios in data processing.</li>
-</ul>
-</li>
-<li><p><strong>SNS Topic for Failure Notifications</strong>:</p>
-<ul>
-<li>Establishes an Amazon SNS topic (<code>dataeng-failure-notification</code>) to send email notifications in case of processing failures.</li>
-</ul>
-</li>
-<li><p><strong>Step Function State Machine Configuration</strong>:</p>
-<ul>
-<li>Designs a state machine that starts with checking the file extension and then moves to a CHOICE state.</li>
-<li>Processes supported file types (.csv) and uses SNS notifications for unsupported types or processing errors.</li>
-</ul>
-</li>
-<li><p><strong>Event-Driven Workflow Setup</strong>:</p>
-<ul>
-<li>Configures AWS CloudTrail and Amazon EventBridge to trigger the state machine upon new file uploads to an S3 bucket.</li>
-</ul>
-</li>
-<li><p><strong>Testing the Pipeline</strong>:</p>
-<ul>
-<li>Involves uploading files to the S3 bucket and observing the state machine’s response, including handling both successful and failed executions.</li>
-</ul>
-</li>
-</ul>
-<p>Purpose of the project:</p>
-<ul>
-<li>The project aims to provide hands-on experience in building and managing an event-driven, serverless data pipeline on AWS.</li>
-<li>It illustrates the integration of various AWS services, error handling, and the importance of observability in pipeline orchestration.</li>
-<li>The exercise serves as a practical example of how AWS Step Function can streamline data pipeline workflows and handle complexities in real-world data engineering scenarios.</li>
-</ul>
-<blockquote>
-<p>For more info, <a class="link"   href="https://subscription.packtpub.com/book/data/9781800560413/8/ch08lvl1sec52/hands-on-ingesting-streaming-data?_gl=1*17mtlck*_gcl_au*MTI5MjU4OTg2MC4xNzAzNDg0Mzg5*_ga*MjExODIxOTUyMS4xNzAzNDg0Mzg5*_ga_Q4R8G7SJDK*MTcwMzgyMDk4NC40LjAuMTcwMzgyMDk4NC42MC4wLjA." >hands-on Orchestration with step functions<i class="fas fa-external-link-alt"></i></a></p>
-</blockquote>
-]]></content>
-      <categories>
-        <category>AWS</category>
-      </categories>
-      <tags>
-        <tag>AWS CodePipeline</tag>
-        <tag>AWS Step Function Orchestration</tag>
       </tags>
   </entry>
 </search>
