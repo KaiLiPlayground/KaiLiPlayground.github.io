@@ -182,7 +182,8 @@
 
 <p>The full I94TransformationAnalyticsETL dag can be found at <a class="link"   href="https://github.com/KaiLiPlayground/i94_data_transformation_proj/blob/main/dag/i94_data_transformation_dag.py" >i94_data_transformation_dag.py<i class="fas fa-external-link-alt"></i></a></p>
 <h2 id="Summary"><a href="#Summary" class="headerlink" title="Summary"></a>Summary</h2><p>The <code>i94_data_transformation</code> DAG represents a robust solution for automating the data transformation process in Apache Airflow. By separating the task logic into individual Python scripts and dynamically creating tasks in the DAG, we achieved a modular and scalable workflow. This approach simplifies maintenance and updates, allowing data engineers to focus on optimizing individual parts of the process without altering the overall DAG structure.</p>
-<p>Note: the project is inspired by <a class="link"   href="https://danieldiamond.github.io/deng-capstone/" >Udacity Capstone Project - Daniel’s post<i class="fas fa-external-link-alt"></i></a> </p>
+<p>Note: the project is inspired by <a class="link"   href="https://danieldiamond.github.io/deng-capstone/" >Udacity Capstone Project - Daniel’s post<i class="fas fa-external-link-alt"></i></a>. In addition, the transformation logic credited to <a class="link"   href="https://github.com/dai-dao/udacity-data-engineering-capstone" >dai-dao<i class="fas fa-external-link-alt"></i></a>. The dag construction logic is my own.</p>
+<h2 id="Disclaimer"><a href="#Disclaimer" class="headerlink" title="Disclaimer"></a>Disclaimer</h2><p>The following post includes code snippets containing database passwords and AWS instance information. Please note that these are merely examples for demonstration purposes in a proof of concept context. We strongly advise you to modify these details in your implementation to prevent unintended expenses, particularly when utilizing high-cost resource SKUs in your cloud formation. It is imperative to carefully plan your resource usage ahead of time. Utilization of the code provided in this blog post is at your own discretion and responsibility.</p>
 ]]></content>
       <categories>
         <category>AWS</category>
@@ -250,6 +251,7 @@
 
 <p><em>Note: EMR already contains the Redshift connector.</em></p>
 <h2 id="Conclusion"><a href="#Conclusion" class="headerlink" title="Conclusion"></a>Conclusion</h2><p>This setup automates the process of transforming movie dataset files from CSV to Parquet and then loading them into Redshift for scalable data warehousing and modeling. It demonstrates the power and flexibility of AWS services and Apache Airflow in creating efficient data pipelines.</p>
+<h2 id="Disclaimer"><a href="#Disclaimer" class="headerlink" title="Disclaimer"></a>Disclaimer</h2><p>The following post includes code snippets containing database passwords and AWS instance information. Please note that these are merely examples for demonstration purposes in a proof of concept context. We strongly advise you to modify these details in your implementation to prevent unintended expenses, particularly when utilizing high-cost resource SKUs in your cloud formation. It is imperative to carefully plan your resource usage ahead of time. Utilization of the code provided in this blog post is at your own discretion and responsibility.</p>
 ]]></content>
       <categories>
         <category>AWS</category>

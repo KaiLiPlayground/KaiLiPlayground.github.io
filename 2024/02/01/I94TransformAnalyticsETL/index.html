@@ -208,7 +208,7 @@
     
         <span class="article-update-date article-meta-item">
         <i class="fas fa-file-pen"></i>&nbsp;
-        <span class="pc">2024-02-01 01:20:52</span>
+        <span class="pc">2024-02-01 01:37:01</span>
     </span>
     
     
@@ -271,7 +271,8 @@
 
 <p>The full I94TransformationAnalyticsETL dag can be found at <a class="link"   target="_blank" rel="noopener" href="https://github.com/KaiLiPlayground/i94_data_transformation_proj/blob/main/dag/i94_data_transformation_dag.py" >i94_data_transformation_dag.py<i class="fas fa-external-link-alt"></i></a></p>
 <h2 id="Summary"><a href="#Summary" class="headerlink" title="Summary"></a>Summary</h2><p>The <code>i94_data_transformation</code> DAG represents a robust solution for automating the data transformation process in Apache Airflow. By separating the task logic into individual Python scripts and dynamically creating tasks in the DAG, we achieved a modular and scalable workflow. This approach simplifies maintenance and updates, allowing data engineers to focus on optimizing individual parts of the process without altering the overall DAG structure.</p>
-<p>Note: the project is inspired by <a class="link"   target="_blank" rel="noopener" href="https://danieldiamond.github.io/deng-capstone/" >Udacity Capstone Project - Daniel’s post<i class="fas fa-external-link-alt"></i></a> </p>
+<p>Note: the project is inspired by <a class="link"   target="_blank" rel="noopener" href="https://danieldiamond.github.io/deng-capstone/" >Udacity Capstone Project - Daniel’s post<i class="fas fa-external-link-alt"></i></a>. In addition, the transformation logic credited to <a class="link"   target="_blank" rel="noopener" href="https://github.com/dai-dao/udacity-data-engineering-capstone" >dai-dao<i class="fas fa-external-link-alt"></i></a>. The dag construction logic is my own.</p>
+<h2 id="Disclaimer"><a href="#Disclaimer" class="headerlink" title="Disclaimer"></a>Disclaimer</h2><p>The following post includes code snippets containing database passwords and AWS instance information. Please note that these are merely examples for demonstration purposes in a proof of concept context. We strongly advise you to modify these details in your implementation to prevent unintended expenses, particularly when utilizing high-cost resource SKUs in your cloud formation. It is imperative to carefully plan your resource usage ahead of time. Utilization of the code provided in this blog post is at your own discretion and responsibility.</p>
 
             </div>
 
@@ -324,7 +325,7 @@
             <div class="toc-content-container">
                 <div class="post-toc-wrap">
     <div class="post-toc">
-        <ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#Automating-Data-Transformation-in-Apache-Airflow-The-i94-Data-Transformation-Case"><span class="nav-number">1.</span> <span class="nav-text">Automating Data Transformation in Apache Airflow: The i94 Data Transformation Case</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#Introduction"><span class="nav-number">1.1.</span> <span class="nav-text">Introduction</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#Constructing-the-DAG"><span class="nav-number">1.2.</span> <span class="nav-text">Constructing the DAG</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#Integrating-Scripts-into-the-Airflow-DAG"><span class="nav-number">1.3.</span> <span class="nav-text">Integrating Scripts into the Airflow DAG</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#Summary"><span class="nav-number">1.4.</span> <span class="nav-text">Summary</span></a></li></ol></li></ol>
+        <ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#Automating-Data-Transformation-in-Apache-Airflow-The-i94-Data-Transformation-Case"><span class="nav-number">1.</span> <span class="nav-text">Automating Data Transformation in Apache Airflow: The i94 Data Transformation Case</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#Introduction"><span class="nav-number">1.1.</span> <span class="nav-text">Introduction</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#Constructing-the-DAG"><span class="nav-number">1.2.</span> <span class="nav-text">Constructing the DAG</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#Integrating-Scripts-into-the-Airflow-DAG"><span class="nav-number">1.3.</span> <span class="nav-text">Integrating Scripts into the Airflow DAG</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#Summary"><span class="nav-number">1.4.</span> <span class="nav-text">Summary</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#Disclaimer"><span class="nav-number">1.5.</span> <span class="nav-text">Disclaimer</span></a></li></ol></li></ol>
     </div>
 </div>
 
